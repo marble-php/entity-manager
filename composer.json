@@ -1,0 +1,48 @@
+{
+    "name": "marble/entity-manager",
+    "description": "An ORM-less entity lifecycle manager for PHP.",
+    "keywords": [
+        "entity",
+        "entity manager",
+        "unit of work",
+        "repository",
+        "orm"
+    ],
+    "homepage": "https://github.com/marble-php/entity-manager",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Mark van den Berg",
+            "email": "mjpvandenberg@gmail.com",
+            "role": "Lead developer"
+        }
+    ],
+    "require": {
+        "php": "^8.1",
+        "doctrine/instantiator": "^1.4",
+        "ocramius/generated-hydrator": "^4.2",
+        "sebastian/comparator": "^4.0",
+        "sebastian/exporter": "^4.0",
+        "psr/event-dispatcher": "^1.0"
+    },
+    "require-dev": {
+        "mockery/mockery": "^1.4",
+        "phpunit/phpunit": "^9.5",
+        "symfony/uid": "^5.3",
+        "psr/container": "^2.0"
+    },
+    "suggest": {
+        "psr/container": "If you want to use the provided container-aware repository factory.",
+        "symfony/uid": "If you want to use the provided ULID implementation of the Identifier interface."
+    },
+    "autoload": {
+        "psr-4": {
+            "Marble\\": "src"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Marble\\Tests\\": "tests"
+        }
+    }
+}
