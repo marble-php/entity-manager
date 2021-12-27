@@ -12,8 +12,7 @@ use ReflectionException;
 class DefaultRepositoryFactory
 {
     /**
-     * @template T of Entity
-     * @var array<class-string<T>, Repository<T>>
+     * @var array<string, Repository<Entity>>
      */
     private array $repositories = [];
 
@@ -32,16 +31,17 @@ class DefaultRepositoryFactory
         $key = $className . spl_object_id($entityManager);
 
         if (array_key_exists($key, $this->repositories)) {
-            return $this->repositories[$key];
-        }
-
-        if (!class_exists($className)) {
+            $repository = $this->repositories[$key];
+        } elseif (!class_exists($className)) {
             throw new LogicException(sprintf("Class %s does not exist.", $className));
         } elseif (!is_subclass_of($className, Entity::class)) {
             throw new LogicException(sprintf("Class %s does not implement the %s interface.", $className, Entity::class));
+        } else {
+            $repository = $this->createRepository($entityManager, $className);
         }
 
-        return $this->repositories[$key] = $this->createRepository($entityManager, $className);
+        /** @var Repository<T> $repository */
+        return $this->repositories[$key] = $repository;
     }
 
     /**
@@ -83,6 +83,13 @@ class DefaultRepositoryFactory
         return new DefaultRepository($reader, $entityManager);
     }
 
+    /**
+     * @template T of Entity
+     * @param class-string<Repository<T>> $repositoryClassName
+     * @param EntityReader                $entityReader
+     * @param EntityManager               $entityManager
+     * @return Repository<T>
+     */
     protected function createCustomRepository(string $repositoryClassName, EntityReader $entityReader, EntityManager $entityManager): Repository
     {
         if (!is_subclass_of($repositoryClassName, DefaultRepository::class)) {

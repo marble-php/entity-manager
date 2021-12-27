@@ -29,14 +29,12 @@ class UnitOfWork implements WriteContext
     private ChangeSetCalculator $changeCalculator;
 
     /**
-     * @template T of Entity
-     * @var array<class-string<T>, ClassInfo<T>>
+     * @var array<string, ClassInfo>
      */
     private array $classInfos = [];
 
     /**
-     * @template T of Entity
-     * @var array<class-string<T>, array<string, T>>
+     * @var array<string, array<string, Entity>>
      */
     private array $identityMap = [];
 
@@ -66,7 +64,10 @@ class UnitOfWork implements WriteContext
      */
     public function getEntityFromIdentityMap(string $className, Identifier $id): ?Entity
     {
-        return $this->identityMap[$className][(string) $id] ?? null;
+        /** @var T $entity */
+        $entity = $this->identityMap[$className][(string) $id] ?? null;
+
+        return $entity;
     }
 
     /**
@@ -83,7 +84,7 @@ class UnitOfWork implements WriteContext
         }
 
         try {
-            /** @var Entity $entity */
+            /** @var T $entity */
             $entity = $this->instantiator->instantiate($className);
         } catch (ExceptionInterface $exception) {
             throw new LogicException($exception->getMessage(), 0, $exception);
@@ -391,6 +392,11 @@ class UnitOfWork implements WriteContext
         }
     }
 
+    /**
+     * @template T of Entity
+     * @param class-string<T> $className
+     * @return ClassInfo<T>
+     */
     private function getClassInfo(string $className): ClassInfo
     {
         return $this->classInfos[$className] ?? $this->classInfos[$className] = new ClassInfo($className);

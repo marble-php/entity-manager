@@ -14,6 +14,7 @@ use SebastianBergmann\Exporter\Exporter;
 
 /**
  * @template T of Entity
+ * @template-implements Repository<T>
  */
 class DefaultRepository implements Repository
 {
@@ -26,6 +27,10 @@ class DefaultRepository implements Repository
      */
     private array $queryResultCache = [];
 
+    /**
+     * @param EntityReader<T> $reader
+     * @param EntityManager   $entityManager
+     */
     public function __construct(
         private EntityReader  $reader,
         private EntityManager $entityManager,
@@ -43,6 +48,9 @@ class DefaultRepository implements Repository
         $this->exporter = new Exporter();
     }
 
+    /**
+     * @return class-string<T>
+     */
     final public function getEntityClassName(): string
     {
         return $this->reader->getEntityClassName();
@@ -88,7 +96,7 @@ class DefaultRepository implements Repository
         }
 
         if (!$query instanceof Identifier) {
-            $this->rememberQueryResults($query, true, $entity);
+            $this->rememberQueryResults($query, true, ...($entity === null ? [] : [$entity]));
         }
 
         return $entity;
@@ -125,6 +133,9 @@ class DefaultRepository implements Repository
         return $entities;
     }
 
+    /**
+     * @return T
+     */
     private function makeEntity(ResultRow $row): Entity
     {
         if ($row->childClass !== null && !is_a($row->childClass, $this->getEntityClassName(), true)) {
@@ -149,9 +160,9 @@ class DefaultRepository implements Repository
     /**
      * @param object|null $query
      * @param bool        $one
-     * @param T           ...$entities
+     * @param T[]         $entities
      */
-    private function rememberQueryResults(?object $query, bool $one, ?Entity ...$entities): void
+    private function rememberQueryResults(?object $query, bool $one, Entity ...$entities): void
     {
         $this->queryResultCache[$this->makeCacheKey($query, $one)] = $entities;
     }

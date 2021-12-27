@@ -7,7 +7,7 @@ class SimpleId implements Identifier
     {
     }
 
-    public function equals($other): bool
+    public function equals(mixed $other): bool
     {
         return $other instanceof static && $this->id === (string) $other;
     }

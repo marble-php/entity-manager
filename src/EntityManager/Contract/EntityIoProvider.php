@@ -1,6 +1,7 @@
 <?php
 namespace Marble\EntityManager\Contract;
 
+use Marble\Entity\Entity;
 use Marble\EntityManager\Repository\DefaultRepository;
 
 interface EntityIoProvider

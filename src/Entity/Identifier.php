@@ -5,5 +5,5 @@ use Stringable;
 
 interface Identifier extends Stringable
 {
-    public function equals($other): bool;
+    public function equals(mixed $other): bool;
 }

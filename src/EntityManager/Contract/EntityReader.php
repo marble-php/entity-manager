@@ -1,6 +1,7 @@
 <?php
 namespace Marble\EntityManager\Contract;
 
+use Marble\Entity\Entity;
 use Marble\EntityManager\Read\DataCollector;
 use Marble\EntityManager\Read\ReadContext;
 

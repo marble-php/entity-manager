@@ -40,15 +40,17 @@ class EntityReference
 
     /**
      * @template S of Entity
-     * @param Entity $entity
+     * @param S $entity
      * @return EntityReference<S>
      */
     public static function create(Entity $entity): self
     {
-        if ($entity->getId() === null) {
+        $id = $entity->getId();
+
+        if ($id === null) {
             throw new LogicException(sprintf("Identifier required for entity reference to %s.", $entity::class));
         }
 
-        return new self($entity::class, $entity->getId());
+        return new self($entity::class, $id);
     }
 }
