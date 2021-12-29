@@ -27,8 +27,7 @@ final class ResultSet implements Countable, IteratorAggregate
     }
 
     /**
-     * @return Traversable|ResultRow[]
-     * @noinspection PhpDocSignatureInspection
+     * @return Traversable<array-key, ResultRow>
      */
     public function getIterator(): Traversable
     {

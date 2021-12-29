@@ -36,10 +36,10 @@ final class ResultSetBuilder implements DataCollector
     {
         if (!class_exists($class)) {
             throw new LogicException(sprintf("Entity reader %s specified unknown class %s for identifier %s.",
-                $this->reader::class, $class, $identifier));
+                $this->reader::class, $class, (string) $identifier));
         } elseif (!is_a($class, $this->reader->getEntityClassName(), true)) {
             throw new LogicException(sprintf("Concrete class %s specified for identifier %s is not a subclass of %s.",
-                $class, $identifier, $this->reader->getEntityClassName()));
+                $class, (string) $identifier, $this->reader->getEntityClassName()));
         }
 
         $this->childClasses[(string) $identifier] = $class;

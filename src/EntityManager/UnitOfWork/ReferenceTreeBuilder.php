@@ -42,7 +42,11 @@ class ReferenceTreeBuilder extends ReferenceFinder
 
         if (array_key_exists($oid, $this->evaluating)) {
             // Take the end part of the stack that forms the reference circle.
-            $entities = array_slice($this->evaluating, array_search($entity, array_values($this->evaluating)));
+            $offset = array_search($entity, array_values($this->evaluating), true);
+
+            assert($offset !== false);
+
+            $entities = array_slice($this->evaluating, $offset);
             $path     = array_map(fn(Entity $entity) => $entity::class . ':' . $entity->getId(), [...$entities, $entity]);
 
             throw new LogicException(sprintf("Circular entity association detected: %s.", implode(" -> ", $path)));

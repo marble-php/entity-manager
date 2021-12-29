@@ -34,7 +34,7 @@ class ChangeSetCalculator
         return $changed;
     }
 
-    private function areEqual($one, $two): bool
+    private function areEqual(mixed $one, mixed $two): bool
     {
         try {
             $comparator = $this->comparatorFactory->getComparatorFor($one, $two);

@@ -40,6 +40,9 @@ class ObjectNeedle
         }
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function extract(object $object): array
     {
         return $this->getHydrator($object)->extract($object);

@@ -3,8 +3,18 @@ namespace Marble\EntityManager\Write;
 
 use Marble\Entity\Entity;
 
+/**
+ * @template T of Entity
+ * @extends EntityWriteContainer<T>
+ */
 class EntityUpdateContainer extends EntityWriteContainer implements HasChanged
 {
+    /**
+     * @param T                        $entity
+     * @param array<string, mixed>     $data
+     * @param array<string, mixed>     $originalData
+     * @param array<array-key, string> $changedProperties
+     */
     public function __construct(Entity $entity, array $data, private array $originalData, private array $changedProperties)
     {
         parent::__construct($entity, $data);
@@ -17,6 +27,6 @@ class EntityUpdateContainer extends EntityWriteContainer implements HasChanged
 
     public function getChangedProperties(): array
     {
-        return $this->changedProperties;
+        return array_values($this->changedProperties);
     }
 }

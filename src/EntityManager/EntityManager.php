@@ -30,7 +30,7 @@ class EntityManager implements ReadContext
     public function fetch(EntityReference $reference): Entity
     {
         return $this->getRepository($reference->getClassName())->fetchOne($reference->getId())
-            ?? throw new EntityNotFoundException(sprintf("%s with identifier %s does not exist.", $reference->getClassName(), $reference->getId()));
+            ?? throw new EntityNotFoundException(sprintf("%s with identifier %s does not exist.", $reference->getClassName(), (string) $reference->getId()));
     }
 
     public function persist(Entity ...$entities): void

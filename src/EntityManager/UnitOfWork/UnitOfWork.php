@@ -29,12 +29,12 @@ class UnitOfWork implements WriteContext
     private ChangeSetCalculator $changeCalculator;
 
     /**
-     * @var array<string, ClassInfo>
+     * @var array<class-string, ClassInfo>
      */
     private array $classInfos = [];
 
     /**
-     * @var array<string, array<string, Entity>>
+     * @var array<class-string, array<string, Entity>>
      */
     private array $identityMap = [];
 
@@ -64,10 +64,8 @@ class UnitOfWork implements WriteContext
      */
     public function getEntityFromIdentityMap(string $className, Identifier $id): ?Entity
     {
-        /** @var T $entity */
-        $entity = $this->identityMap[$className][(string) $id] ?? null;
-
-        return $entity;
+        /** @var array<class-string<T>, array<string, T>> $this->identityMap */
+        return $this->identityMap[$className][(string) $id] ?? null;
     }
 
     /**
@@ -92,15 +90,16 @@ class UnitOfWork implements WriteContext
 
         if (!in_array($identifier, $data, true)) {
             // Include identifier in hydration if it's not included yet.
+            /** @var Identifier $identifier */
             $data[self::DEFAULT_ENTITY_ID_PROPERTY] ??= $identifier;
         }
 
         $this->needle->hydrate($entity, $data);
 
         if ($entity->getId() === null) {
-            throw new LogicException(sprintf("Hydrated %s entity should have identifier %s, has no identifier.", $className, $identifier));
+            throw new LogicException(sprintf("Hydrated %s entity should have identifier %s, has no identifier.", $className, (string) $identifier));
         } elseif ($entity->getId() !== $identifier) {
-            throw new LogicException(sprintf("Hydrated %s entity should have identifier %s, has identifier %s instead.", $className, $identifier, $entity->getId()));
+            throw new LogicException(sprintf("Hydrated %s entity should have identifier %s, has identifier %s instead.", $className, (string) $identifier, (string) $entity->getId()));
         }
 
         $this->dispatcher?->dispatch(new FetchedEntityInstantiatedEvent($entity));
@@ -113,21 +112,25 @@ class UnitOfWork implements WriteContext
      * Manage an entity within this unit of work.
      *
      * This method also registers any associated entities.
+     *
+     * @param Entity                    $entity
+     * @param array<string, mixed>|null $loadedData
      */
     public function register(Entity $entity, ?array $loadedData = null): void
     {
         $info = $this->entities[$oid = spl_object_id($entity)] ?? new EntityInfo($entity, $loadedData);
+        $id   = $entity->getId();
 
-        if ($entity->getId() !== null) {
+        if ($id !== null) {
             // If a NEW entity without an identifier is registered, it won't be added to the identity map,
             // but that's OK, because in that case we needn't protect against duplicate instantiations.
             // In fact, only FETCHED entities must be added to the identity map, but there's no harm
             // in adding NEW entities with identifiers as well.
 
-            if ($existing = $this->getEntityFromIdentityMap($entity::class, $entity->getId())) {
+            if ($existing = $this->getEntityFromIdentityMap($entity::class, $id)) {
                 if ($existing !== $entity) {
                     throw new LogicException(sprintf("A different %s entity with identifier %s was already registered in the current unit of work.",
-                        $entity::class, $entity->getId()));
+                        $entity::class, (string) $entity->getId()));
                 }
             } else {
                 $this->identityMap[$entity::class][(string) $entity->getId()] = $entity;
@@ -154,7 +157,9 @@ class UnitOfWork implements WriteContext
         $referenceReplacer    = new ReferenceReplacer();
 
         $referenceFinder->forEach($entity, function (Entity $subentity, array $path) use ($info, $referenceReplacer): void {
-            if ($existing = $this->getEntityFromIdentityMap($subentity::class, $subentity->getId())) {
+            $id = $subentity->getId();
+
+            if ($id !== null && ($existing = $this->getEntityFromIdentityMap($subentity::class, $id))) {
                 if ($existing !== $subentity) {
                     // An equivalent but not identical entity is already known.
                     // To prevent this expensive operation, use the appropriate repository to fetch the associated entity.
@@ -251,7 +256,7 @@ class UnitOfWork implements WriteContext
 
             // Then all updates.
 
-            foreach ($flushOrder as $oid => $entity) {
+            foreach (array_keys($flushOrder) as $oid) {
                 if (!array_key_exists($oid, $inserted)) {
                     $this->write($this->entities[$oid]);
                 }
@@ -316,8 +321,12 @@ class UnitOfWork implements WriteContext
 
             $entityInfo->setHasChanged(true);
 
-            $data        = $this->needle->extract($entity);
-            $persistable = new EntityUpdateContainer($entity, $data, $entityInfo->getLastSavedData(), $changes);
+            $data      = $this->needle->extract($entity);
+            $lastSaved = $entityInfo->getLastSavedData();
+
+            assert($lastSaved !== null);
+
+            $persistable = new EntityUpdateContainer($entity, $data, $lastSaved, $changes);
         }
 
         try {
@@ -331,15 +340,17 @@ class UnitOfWork implements WriteContext
     private function delete(EntityInfo $entityInfo): void
     {
         $entity = $entityInfo->getEntity();
+        $writer = $this->ioProvider->getWriter($entity::class);
 
-        if ($entityInfo->getState() === EntityState::REMOVED) {
+        if ($writer === null) {
+            // Another entity writer is responsible for deleting this entity.
+            return;
+        } elseif ($entityInfo->getState() === EntityState::REMOVED) {
             throw new LogicException(sprintf("Entity %s is already removed.", LogicException::strEntity($entity)));
         }
 
         try {
             if ($entityInfo->getState() !== EntityState::NEW) {
-                $writer = $this->ioProvider->getWriter($entity::class);
-
                 $writer->delete($entity, $this);
             }
 
@@ -399,6 +410,7 @@ class UnitOfWork implements WriteContext
      */
     private function getClassInfo(string $className): ClassInfo
     {
+        /** @var array<class-string<T>, ClassInfo<T>> $this->classInfos */
         return $this->classInfos[$className] ?? $this->classInfos[$className] = new ClassInfo($className);
     }
 }

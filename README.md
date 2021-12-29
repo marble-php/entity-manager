@@ -13,6 +13,16 @@ Use Composer to install: `composer require marble/entity-manager`
 
 This library requires PHP 8.1.
 
+### How to use
+
+1. All your entity classes should implement the `Entity` interface. For identifiers you may use the 
+provided `SimpleId` or `Ulid` classes, or any other implementation of the `Identifier` interface.
+2. Create a class that implements `EntityReader` for every entity class that you want to fetch
+from your application code or from other readers. See [Fetching](#fetching) for more details.
+3. For every entity class, create a class that implements `EntityWriter`, unless such entities are
+always written and deleted by other writers. See [Persisting](#persisting) and [Removing](#removing)
+for more details.
+
 ### Persisting
 
 - Multiple entities in the same entity class hierarchy must never have the same identifier. It’s okay if
@@ -21,7 +31,6 @@ new entities don’t have an identifier yet, but once an entity is persisted it 
 all ranked higher than the entity itself. As such, when persisting an entity in `EntityWriter::write`, 
 its associated entities will have been passed to their writers already. This algorithm does not 
 allow circular entity associations. 
-- 
 - You may use a writer to persist not just its own entity but particular associated entities ("child entities")
 as well, e.g. an aggregate root’s writer also persisting other entities in the aggregate. Make sure
 to call `markPersisted` on the passed `WriteContext` to let the unit of work know that

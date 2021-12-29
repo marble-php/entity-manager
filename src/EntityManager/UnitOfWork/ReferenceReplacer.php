@@ -44,15 +44,15 @@ class ReferenceReplacer
         $target = $reference;
     }
 
-    public function &getPropertyByReference(object $object, string $property)
+    public function &getPropertyByReference(object $object, string $property): mixed
     {
-        $getter = function &() use ($property) {
+        $getter = function &() use ($property): mixed {
             return $this->{$property};
         };
 
+        /** @var callable $bound */
         $bound = Closure::bind($getter, $object, $object);
 
-        /** @noinspection PhpPassByRefInspection */
         return $bound();
     }
 }

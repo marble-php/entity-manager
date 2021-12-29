@@ -4,9 +4,6 @@ namespace Marble\EntityManager\UnitOfWork;
 use Marble\Entity\Entity;
 use Marble\Exception\LogicException;
 
-/**
- * @template T of Entity
- */
 class EntityInfo
 {
     private EntityState $state;
@@ -14,30 +11,34 @@ class EntityInfo
     private bool $hasChanged = false;
 
     /**
-     * @param T $entity
+     * @param Entity                    $entity
+     * @param array<string, mixed>|null $lastSavedData
      */
     public function __construct(private Entity $entity, private ?array $lastSavedData = null)
     {
-        $this->setState($lastSavedData === null ? EntityState::NEW : EntityState::FETCHED);
+        $this->state = $lastSavedData === null ? EntityState::NEW : EntityState::FETCHED;
 
         if ($this->state === EntityState::FETCHED && $entity->getId() === null) {
             throw new LogicException(sprintf("Fetched % entity has no identifier.", $entity::class));
         }
     }
 
-    /**
-     * @return T
-     */
     public function getEntity(): Entity
     {
         return $this->entity;
     }
 
+    /**
+     * @return array<string, mixed>|null
+     */
     public function getLastSavedData(): ?array
     {
         return $this->lastSavedData;
     }
 
+    /**
+     * @param array<string, mixed> $lastSavedData
+     */
     public function setLastSavedData(array $lastSavedData): void
     {
         $this->lastSavedData = $lastSavedData;

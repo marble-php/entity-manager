@@ -14,7 +14,7 @@ use SebastianBergmann\Exporter\Exporter;
 
 /**
  * @template T of Entity
- * @template-implements Repository<T>
+ * @implements Repository<T>
  */
 class DefaultRepository implements Repository
 {
@@ -80,15 +80,13 @@ class DefaultRepository implements Repository
         $resultSet = $resultSetBuilder->build();
         $entity    = null;
 
-        if ($resultSet->count() > 0) {
-            $row = $resultSet->first();
-
+        if ($row = $resultSet->first()) {
             if ($query instanceof Identifier && $resultSet->count() > 1) {
-                throw new LogicException(sprintf("%d %s entities returned for identifier %s.", $resultSet->count(), $this->getEntityClassName(), $query));
+                throw new LogicException(sprintf("%d %s entities returned for identifier %s.", $resultSet->count(), $this->getEntityClassName(), (string) $query));
             } elseif ($query instanceof Identifier && !$row->identifier->equals($query)) {
                 throw new LogicException(sprintf(
                     "Entity reader %s for entity %s gave a result when queried for identifier %s, but the returned entity has identifier %s.",
-                    $this->reader::class, $this->getEntityClassName(), $query, $row->identifier
+                    $this->reader::class, $this->getEntityClassName(), (string) $query, (string) $row->identifier
                 ));
             }
 
@@ -140,7 +138,7 @@ class DefaultRepository implements Repository
     {
         if ($row->childClass !== null && !is_a($row->childClass, $this->getEntityClassName(), true)) {
             throw new LogicException(sprintf("Concrete class %s specified for identifier %s is not a subclass of %s.",
-                $row->childClass, $row->identifier, $this->getEntityClassName()));
+                $row->childClass, (string) $row->identifier, $this->getEntityClassName()));
         }
 
         return $this->getUnitOfWork()->getEntityFromIdentityMap($this->getEntityClassName(), $row->identifier)
