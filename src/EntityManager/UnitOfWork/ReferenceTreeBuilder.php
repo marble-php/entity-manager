@@ -59,7 +59,8 @@ class ReferenceTreeBuilder extends ReferenceFinder
                 return $this->trees[$oid];
             }
 
-            $references = $this->collect($entity, function (Entity $subentity) use ($ignore): ?ReferenceTree {
+            $this->trees[$oid] = $tree = new ReferenceTree($entity);
+            $references        = $this->collect($entity, function (Entity $subentity) use ($ignore): ?ReferenceTree {
                 if (!is_callable($ignore) || !$ignore($subentity)) {
                     return $this->buildTree($subentity, $ignore);
                 } else {
@@ -67,7 +68,11 @@ class ReferenceTreeBuilder extends ReferenceFinder
                 }
             });
 
-            return $this->trees[$oid] = new ReferenceTree($entity, ...$references);
+            foreach ($references as $path => $referenceTree) {
+                $tree->putReference($path, $referenceTree);
+            }
+
+            return $tree;
         } finally {
             unset($this->evaluating[$oid]);
         }

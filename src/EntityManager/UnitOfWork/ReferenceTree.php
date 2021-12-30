@@ -6,13 +6,17 @@ use Marble\Entity\Entity;
 class ReferenceTree
 {
     /**
-     * @var list<ReferenceTree>
+     * @var array<string, ReferenceTree>
      */
-    private array $references;
+    private array $references = [];
 
-    public function __construct(private Entity $entity, ReferenceTree ...$references)
+    public function __construct(private Entity $entity)
     {
-        $this->references = array_values($references);
+    }
+    
+    public function putReference(string $path, ReferenceTree $tree): void
+    {
+        $this->references[$path] = $tree;
     }
 
     public function getEntity(): Entity
@@ -21,7 +25,7 @@ class ReferenceTree
     }
 
     /**
-     * @return list<ReferenceTree>
+     * @return array<string, ReferenceTree>
      */
     public function getReferences(): array
     {

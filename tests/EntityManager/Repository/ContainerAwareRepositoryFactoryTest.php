@@ -20,7 +20,7 @@ class ContainerAwareRepositoryFactoryTest extends MockeryTestCase
         $container     = Mockery::mock(ContainerInterface::class);
         $reader        = Mockery::mock(EntityReader::class);
 
-        $reader->allows('getEntityClassName')->once()->andReturn(AnotherTestEntity::class);
+        $reader->allows('getEntityClassName')->atLeast()->once()->andReturn(AnotherTestEntity::class);
 
         $repo1 = new CustomTestRepository($reader, $entityManager);
 
