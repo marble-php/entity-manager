@@ -47,7 +47,7 @@ class ReferenceTreeBuilder extends ReferenceFinder
             assert($offset !== false);
 
             $entities = array_slice($this->evaluating, $offset);
-            $path     = array_map(fn(Entity $entity) => $entity::class . ':' . $entity->getId(), [...$entities, $entity]);
+            $path     = array_map(fn(Entity $entity) => LogicException::strEntity($entity), [...$entities, $entity]);
 
             throw new LogicException(sprintf("Circular entity association detected: %s.", implode(" -> ", $path)));
         }

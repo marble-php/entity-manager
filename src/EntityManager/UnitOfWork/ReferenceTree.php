@@ -12,7 +12,7 @@ class ReferenceTree
 
     public function __construct(private Entity $entity, ReferenceTree ...$references)
     {
-        $this->references = $references;
+        $this->references = array_values($references);
     }
 
     public function getEntity(): Entity

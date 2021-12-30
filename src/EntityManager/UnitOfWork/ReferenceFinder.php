@@ -11,8 +11,9 @@ class ReferenceFinder
     }
 
     /**
-     * @param callable(Entity, list<string|int>): mixed $fn
-     * @return array<string, mixed>
+     * @template T
+     * @param callable(Entity, list<string|int>): ?T $fn
+     * @return array<string, T>
      */
     public function collect(Entity $entity, callable $fn): array
     {
@@ -30,14 +31,17 @@ class ReferenceFinder
     }
 
     /**
-     * @param array<string|int, mixed>                  $data
-     * @param callable(Entity, list<string|int>): mixed $fn
-     * @return array<string, mixed>
+     * @template T
+     * @param array<string, mixed>                  $data
+     * @param callable(Entity, list<string|int>): T $fn
+     * @param array<string, string>                 $path
+     * @return array<string, T>
      */
     private function cascade(array $data, callable $fn, array $path): array
     {
         $collection = [];
 
+        /** @psalm-suppress MixedAssignment */
         foreach ($data as $key => $value) {
             $currentPathString = implode('.', [...$path, $key]);
 
@@ -49,6 +53,7 @@ class ReferenceFinder
                         $collection[$currentPathString] = $result;
                     }
                 } elseif (is_array($value) || is_object($value)) {
+                    /** @var array<string, mixed> $array */
                     $array = is_object($value) && !$value instanceof stdClass ? $this->needle->extract($value) : (array) $value;
 
                     $collection += $this->cascade($array, $fn, $path);

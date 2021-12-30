@@ -42,6 +42,7 @@ class ObjectNeedle
 
     /**
      * @return array<string, mixed>
+     * @psalm-suppress MixedReturnTypeCoercion
      */
     public function extract(object $object): array
     {

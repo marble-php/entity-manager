@@ -1,14 +1,26 @@
 <?php
 namespace Marble\EntityManager\Read;
 
+use Marble\Entity\Entity;
 use Marble\Entity\Identifier;
 use Marble\EntityManager\Contract\EntityReader;
 use Marble\Exception\LogicException;
 
 final class ResultSetBuilder implements DataCollector
 {
+    /**
+     * @var array<string, array<string, mixed>>
+     */
     private array $data = [];
+
+    /**
+     * @var array<string, Identifier>
+     */
     private array $identifiers = [];
+
+    /**
+     * @var array<string, class-string<Entity>>
+     */
     private array $childClasses = [];
 
     public function __construct(private EntityReader $reader)
@@ -21,6 +33,7 @@ final class ResultSetBuilder implements DataCollector
             $this->putClass($identifier, $subclass);
         }
 
+        /** @psalm-suppress MixedAssignment */
         foreach ($data as $propertyName => $value) {
             $this->putProperty($identifier, $propertyName, $value);
         }

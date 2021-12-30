@@ -25,6 +25,7 @@ class ChangeSetCalculator
         $lastSaved = $entityInfo->getLastSavedData();
         $changed   = [];
 
+        /** @psalm-suppress MixedAssignment */
         foreach ($extracted as $key => $value) {
             if (!$this->areEqual($value, $lastSaved[$key] ?? null)) {
                 $changed[] = $key;

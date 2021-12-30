@@ -49,7 +49,10 @@ class ReferenceReplacerTest extends MockeryTestCase
         $this->assertSame($t3, $t1->getFoo()->bar[1]->t2);
     }
 
-    public function testIncorrectPath(): void
+    /**
+     * @dataProvider getIncorrectPaths
+     */
+    public function testIncorrectPath(array $incorrectPath): void
     {
         $replacer = new ReferenceReplacer();
 
@@ -59,7 +62,17 @@ class ReferenceReplacerTest extends MockeryTestCase
         $o2->t2   = new TestEntityWithObjectProps();
 
         $this->expectException(LogicException::class);
-        $replacer->replaceReference($t1, ['foo', 'bar', 0, 't2'], new TestEntityWithObjectProps());
+        $replacer->replaceReference($t1, $incorrectPath, new TestEntityWithObjectProps());
+    }
+
+    public function getIncorrectPaths(): array
+    {
+        return [
+            [['foz', 'bar', 1, 't2']],
+            [['foo', 'baz', 1, 't2']],
+            [['foo', 'bar', 0, 't2']],
+            [['foo', 'bar', 1, 'tt']],
+        ];
     }
 
     public function testEmptyPath(): void

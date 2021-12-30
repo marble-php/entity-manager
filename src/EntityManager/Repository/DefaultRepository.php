@@ -23,7 +23,7 @@ class DefaultRepository implements Repository
     /**
      * Keys are hashes of serialized queries plus a suffix indicating one or many.
      *
-     * @var array<string, T[]>
+     * @var array<string, list<T>>
      */
     private array $queryResultCache = [];
 
@@ -158,17 +158,17 @@ class DefaultRepository implements Repository
     /**
      * @param object|null $query
      * @param bool        $one
-     * @param T[]         $entities
+     * @param list<T>     $entities
      */
     private function rememberQueryResults(?object $query, bool $one, Entity ...$entities): void
     {
-        $this->queryResultCache[$this->makeCacheKey($query, $one)] = $entities;
+        $this->queryResultCache[$this->makeCacheKey($query, $one)] = array_values($entities);
     }
 
     /**
      * @param object|null $query
      * @param bool        $one
-     * @return T[]|null
+     * @return list<T>|null
      */
     private function getCachedQueryResults(?object $query, bool $one): ?array
     {

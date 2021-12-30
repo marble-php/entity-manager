@@ -88,10 +88,9 @@ class UnitOfWork implements WriteContext
             throw new LogicException($exception->getMessage(), 0, $exception);
         }
 
-        if (!in_array($identifier, $data, true)) {
+        if (!in_array($identifier, $data, true) && !isset($data[self::DEFAULT_ENTITY_ID_PROPERTY])) {
             // Include identifier in hydration if it's not included yet.
-            /** @var Identifier $identifier */
-            $data[self::DEFAULT_ENTITY_ID_PROPERTY] ??= $identifier;
+            $data[self::DEFAULT_ENTITY_ID_PROPERTY] = $identifier;
         }
 
         $this->needle->hydrate($entity, $data);
@@ -99,7 +98,8 @@ class UnitOfWork implements WriteContext
         if ($entity->getId() === null) {
             throw new LogicException(sprintf("Hydrated %s entity should have identifier %s, has no identifier.", $className, (string) $identifier));
         } elseif ($entity->getId() !== $identifier) {
-            throw new LogicException(sprintf("Hydrated %s entity should have identifier %s, has identifier %s instead.", $className, (string) $identifier, (string) $entity->getId()));
+            throw new LogicException(sprintf("Hydrated %s entity should have identifier %s, has identifier %s instead.",
+                $className, (string) $identifier, (string) $entity->getId()));
         }
 
         $this->dispatcher?->dispatch(new FetchedEntityInstantiatedEvent($entity));
