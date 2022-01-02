@@ -33,9 +33,9 @@ class EntityReference
         return $this->identifier;
     }
 
-    public function refersTo(Entity $entity): bool
+    public function refersTo(string|Entity $entity): bool
     {
-        return is_a($entity, $this->className) && $this->getId()->equals($entity->getId());
+        return is_a($entity, $this->className, true) && (!$entity instanceof Entity || $this->getId()->equals($entity->getId()));
     }
 
     /**

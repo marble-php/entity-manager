@@ -8,6 +8,7 @@ use Marble\EntityManager\EntityManager;
 use Marble\EntityManager\Repository\DefaultRepositoryFactory;
 use Marble\EntityManager\Repository\Repository;
 use Marble\EntityManager\UnitOfWork\UnitOfWork;
+use Marble\Tests\EntityManager\TestImpl\Entity\BasicTestEntity;
 use Marble\Tests\EntityManager\TestImpl\Entity\EntityWithSimpleId;
 use Mockery;
 use Mockery\Adapter\Phpunit\MockeryTestCase;
@@ -27,11 +28,12 @@ class EntityManagerTest extends MockeryTestCase
         $repositoryFactory->allows('getRepository')->with($entityManager, $ref1->getClassName())->twice()->andReturn($repo);
         $repo->allows('fetchOne')->with($ref1->getId())->once()->andReturn($t1);
 
-        /** @noinspection PhpUnhandledExceptionInspection */
         $t2 = $entityManager->fetch($ref1);
 
         $this->assertSame($t2, $t1);
         $this->assertTrue($ref1->refersTo($t1));
+        $this->assertTrue($ref1->refersTo(EntityWithSimpleId::class));
+        $this->assertFalse($ref1->refersTo(BasicTestEntity::class));
 
         $ref2 = new EntityReference(EntityWithSimpleId::class, new SimpleId(1));
 
@@ -62,7 +64,6 @@ class EntityManagerTest extends MockeryTestCase
 
         $unitOfWork->allows('flush')->once();
 
-        /** @noinspection PhpUnhandledExceptionInspection */
         $entityManager->flush();
     }
 }
