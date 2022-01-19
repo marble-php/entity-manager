@@ -8,8 +8,10 @@ use Marble\EntityManager\EntityManager;
 use Marble\EntityManager\Repository\DefaultRepositoryFactory;
 use Marble\EntityManager\Repository\Repository;
 use Marble\EntityManager\UnitOfWork\UnitOfWork;
+use Marble\Tests\EntityManager\TestImpl\Entity\AbstractTestEntity;
 use Marble\Tests\EntityManager\TestImpl\Entity\BasicTestEntity;
 use Marble\Tests\EntityManager\TestImpl\Entity\EntityWithSimpleId;
+use Marble\Tests\EntityManager\TestImpl\Entity\ExtendedBasicTestEntity;
 use Mockery;
 use Mockery\Adapter\Phpunit\MockeryTestCase;
 
@@ -32,8 +34,6 @@ class EntityManagerTest extends MockeryTestCase
 
         $this->assertSame($t2, $t1);
         $this->assertTrue($ref1->refersTo($t1));
-        $this->assertTrue($ref1->refersTo(EntityWithSimpleId::class));
-        $this->assertFalse($ref1->refersTo(BasicTestEntity::class));
 
         $ref2 = new EntityReference(EntityWithSimpleId::class, new SimpleId(1));
 
@@ -65,5 +65,25 @@ class EntityManagerTest extends MockeryTestCase
         $unitOfWork->allows('flush')->once();
 
         $entityManager->flush();
+    }
+
+    public function testEntityReference(): void
+    {
+        $t1 = new BasicTestEntity();
+        $t2 = new ExtendedBasicTestEntity();
+
+        $ref1 = EntityReference::create($t1);
+        $this->assertTrue($ref1->refersTo($t1));
+        $this->assertFalse($ref1->refersTo($t2));
+        $this->assertTrue($ref1->refersTo(AbstractTestEntity::class));
+        $this->assertTrue($ref1->refersTo(BasicTestEntity::class));
+        $this->assertFalse($ref1->refersTo(ExtendedBasicTestEntity::class));
+
+        $ref2 = new EntityReference(AbstractTestEntity::class, $t2->getId());
+        $this->assertFalse($ref2->refersTo($t1));
+        $this->assertTrue($ref2->refersTo($t2));
+        $this->assertTrue($ref2->refersTo(AbstractTestEntity::class));
+        $this->assertFalse($ref2->refersTo(BasicTestEntity::class));
+        $this->assertFalse($ref2->refersTo(ExtendedBasicTestEntity::class));
     }
 }

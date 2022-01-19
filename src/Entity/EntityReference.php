@@ -35,7 +35,13 @@ class EntityReference
 
     public function refersTo(string|Entity $entity): bool
     {
-        return is_a($entity, $this->className, true) && (!$entity instanceof Entity || $this->getId()->equals($entity->getId()));
+        if (is_string($entity)) {
+            // Check if our class is equal to, or a subclass of, the given class.
+            return is_a($this->className, $entity, true);
+        } else {
+            // Our class may be an abstract or concrete superclass of the actual entity.
+            return is_a($entity, $this->className) && $this->getId()->equals($entity->getId());
+        }
     }
 
     /**
