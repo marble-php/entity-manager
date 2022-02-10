@@ -37,6 +37,7 @@ class EntityReference
     {
         if (is_string($entity)) {
             // Check if our class is equal to, or a subclass of, the given class.
+            /** @var class-string $entity */
             return is_a($this->className, $entity, true);
         } else {
             // Our class may be an abstract or concrete superclass of the actual entity.

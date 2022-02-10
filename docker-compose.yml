@@ -9,6 +9,6 @@ services:
             - .:/usr/src/marble
         environment:
             - PHP_IDE_CONFIG=serverName=docker
-            - XDEBUG_MODE=develop,debug
+            - XDEBUG_MODE=develop,debug,coverage
             - XDEBUG_TRIGGER=1
             - XDEBUG_CONFIG=idekey=PHPSTORM

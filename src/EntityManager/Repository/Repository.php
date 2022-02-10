@@ -14,6 +14,16 @@ interface Repository
     public function getEntityClassName(): string;
 
     /**
+     * @param T $entity
+     */
+    public function add(Entity $entity): void;
+
+    /**
+     * @param T $entity
+     */
+    public function remove(Entity $entity): void;
+
+    /**
      * @return T|null
      */
     public function fetchOne(object $query): ?Entity;

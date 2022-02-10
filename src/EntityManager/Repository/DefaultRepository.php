@@ -56,6 +56,28 @@ class DefaultRepository implements Repository
         return $this->reader->getEntityClassName();
     }
 
+    public function add(Entity $entity): void
+    {
+        $className = $this->getEntityClassName();
+
+        if (!$entity instanceof $className) {
+            throw new LogicException(sprintf("Entity %s not accepted by repository for entity %s.", LogicException::strEntity($entity), $className));
+        }
+
+        $this->entityManager->persist($entity);
+    }
+
+    public function remove(Entity $entity): void
+    {
+        $className = $this->getEntityClassName();
+
+        if (!$entity instanceof $className) {
+            throw new LogicException(sprintf("Entity %s not accepted by repository for entity %s.", LogicException::strEntity($entity), $className));
+        }
+
+        $this->entityManager->remove($entity);
+    }
+
     private function getUnitOfWork(): UnitOfWork
     {
         return $this->entityManager->getUnitOfWork();

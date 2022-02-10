@@ -208,4 +208,31 @@ class DefaultRepositoryTest extends MockeryTestCase
         $this->expectException(LogicException::class);
         $repository->fetchOne($id2);
     }
+
+    public function testAdditionViaRepository(): void
+    {
+        $em     = $this->makeEntityManager();
+        $reader = Mockery::mock(EntityReader::class);
+        $reader->allows('getEntityClassName')->atLeast()->once()->andReturn(AnotherTestEntity::class);
+        $reader->allows('read')->once()->with(null, $this->collect(), $em);
+        $repository = new DefaultRepository($reader, $em);
+
+        $this->assertEmpty($repository->fetchAll());
+
+        $repository->add($t1 = new AnotherTestEntity());
+
+        // Queries are unaffected by uncommitted changes, unless they are by identifier.
+        $this->assertEmpty($repository->fetchAll());
+        $this->assertSame($t1, $repository->fetchOne($t1->getId()));
+
+        $repository->add(new AnotherTestEntity());
+        $repository->add(new AnotherTestEntity());
+        $repository->add(new AnotherTestEntity());
+
+        $this->assertEmpty($repository->fetchAll());
+        $this->assertSame($t1, $repository->fetchOne($t1->getId()));
+
+        $this->expectException(LogicException::class);
+        $repository->add(new BasicTestEntity());
+    }
 }
