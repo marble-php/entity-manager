@@ -3,6 +3,7 @@ namespace Marble\EntityManager\Repository;
 
 use Marble\Entity\Entity;
 use Marble\Entity\Identifier;
+use Marble\EntityManager\Cache\QueryResultCache;
 use Marble\EntityManager\Contract\EntityReader;
 use Marble\EntityManager\EntityManager;
 use Marble\EntityManager\Read\Criteria;
@@ -10,7 +11,6 @@ use Marble\EntityManager\Read\ResultRow;
 use Marble\EntityManager\Read\ResultSetBuilder;
 use Marble\EntityManager\UnitOfWork\UnitOfWork;
 use Marble\Exception\LogicException;
-use SebastianBergmann\Exporter\Exporter;
 
 /**
  * @template T of Entity
@@ -18,15 +18,6 @@ use SebastianBergmann\Exporter\Exporter;
  */
 class DefaultRepository implements Repository
 {
-    private Exporter $exporter;
-
-    /**
-     * Keys are hashes of serialized queries plus a suffix indicating one or many.
-     *
-     * @var array<string, list<T>>
-     */
-    private array $queryResultCache = [];
-
     /**
      * @param EntityReader<T> $reader
      * @param EntityManager   $entityManager
@@ -44,8 +35,6 @@ class DefaultRepository implements Repository
             throw new LogicException(sprintf("Class %s returned by %s::getEntityClassName() does not implement the %s interface.",
                 $entityClass, $reader::class, Entity::class));
         }
-
-        $this->exporter = new Exporter();
     }
 
     /**
@@ -83,6 +72,11 @@ class DefaultRepository implements Repository
         return $this->entityManager->getUnitOfWork();
     }
 
+    private function getCache(): QueryResultCache
+    {
+        return $this->entityManager->getQueryResultCache();
+    }
+
     final public function fetchOne(object $query): ?Entity
     {
         if ($query instanceof Identifier) {
@@ -90,7 +84,7 @@ class DefaultRepository implements Repository
                 return $entity;
             }
         } else {
-            $cached = $this->getCachedQueryResults($query, true);
+            $cached = $this->getCache()->get($this, $query, true);
 
             if ($cached !== null) {
                 return empty($cached) ? null : reset($cached);
@@ -116,7 +110,7 @@ class DefaultRepository implements Repository
         }
 
         if (!$query instanceof Identifier) {
-            $this->rememberQueryResults($query, true, ...($entity === null ? [] : [$entity]));
+            $this->getCache()->save($this, $query, true, ...($entity === null ? [] : [$entity]));
         }
 
         return $entity;
@@ -133,7 +127,7 @@ class DefaultRepository implements Repository
             throw new LogicException(sprintf("Query argument to %s must not be an identifier.", __METHOD__));
         }
 
-        $cached = $this->getCachedQueryResults($query, false);
+        $cached = $this->getCache()->get($this, $query, false);
 
         if ($cached !== null) {
             return $cached;
@@ -148,7 +142,7 @@ class DefaultRepository implements Repository
             $entities[] = $this->makeEntity($row);
         }
 
-        $this->rememberQueryResults($query, false, ...$entities);
+        $this->getCache()->save($this, $query, false, ...$entities);
 
         return $entities;
     }
@@ -175,37 +169,5 @@ class DefaultRepository implements Repository
     final public function fetchAll(): array
     {
         return $this->fetchMany(null);
-    }
-
-    /**
-     * @param object|null $query
-     * @param bool        $one
-     * @param list<T>     $entities
-     */
-    private function rememberQueryResults(?object $query, bool $one, Entity ...$entities): void
-    {
-        $this->queryResultCache[$this->makeCacheKey($query, $one)] = array_values($entities);
-    }
-
-    /**
-     * @param object|null $query
-     * @param bool        $one
-     * @return list<T>|null
-     */
-    private function getCachedQueryResults(?object $query, bool $one): ?array
-    {
-        return $this->queryResultCache[$this->makeCacheKey($query, $one)] ?? null;
-    }
-
-    private function makeCacheKey(?object $query, bool $one): string
-    {
-        $export = $this->exporter->export($query, 2);
-
-        return md5($export) . $one;
-    }
-
-    final public function clearQueryResultCache(): void
-    {
-        $this->queryResultCache = [];
     }
 }

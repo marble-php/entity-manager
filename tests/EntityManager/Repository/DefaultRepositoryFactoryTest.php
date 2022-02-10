@@ -2,6 +2,7 @@
 namespace Marble\Tests\EntityManager\Repository;
 
 use Marble\Entity\Ulid;
+use Marble\EntityManager\Cache\QueryResultCache;
 use Marble\EntityManager\Contract\EntityIoProvider;
 use Marble\EntityManager\Contract\EntityReader;
 use Marble\EntityManager\EntityManager;
@@ -93,11 +94,14 @@ class DefaultRepositoryFactoryTest extends MockeryTestCase
 
         $this->assertInstanceOf(DefaultRepository::class, $repo);
 
+        $entityManager->allows('getQueryResultCache')->andReturn($cache = Mockery::mock(QueryResultCache::class));
         $entityManager->allows('getUnitOfWork')->andReturn($unitOfWork);
         $unitOfWork->allows('getEntityFromIdentityMap')->andReturn($t1 = new BasicTestEntity());
         $reader1->allows('read')->once()->with($query = $this->makeQuery(), $this->collect(
             new ResultRow(new Ulid(), ['name' => 'John Doe'], BasicTestEntity::class),
         ), $entityManager);
+        $cache->allows('get')->once()->with($repo, $query, true)->andReturn(null);
+        $cache->allows('save')->once()->with($repo, $query, true, $t1)->andReturn(null);
 
         $t2 = $repo->fetchOne($query);
         $this->assertSame($t1, $t2);
@@ -110,6 +114,7 @@ class DefaultRepositoryFactoryTest extends MockeryTestCase
         $unitOfWork    = Mockery::mock(UnitOfWork::class);
         $factory       = new DefaultRepositoryFactory($ioProvider);
 
+        $entityManager->allows('getQueryResultCache')->andReturn($cache = Mockery::mock(QueryResultCache::class));
         $entityManager->allows('getUnitOfWork')->andReturn($unitOfWork);
         $ioProvider->allows('getCustomRepositoryClass')->with(AnotherTestEntity::class)->once()->andReturn(CustomTestRepository::class);
         $ioProvider->allows('getReader')->with(AnotherTestEntity::class)->once()->andReturn($reader1 = Mockery::mock(EntityReader::class));
@@ -120,8 +125,11 @@ class DefaultRepositoryFactoryTest extends MockeryTestCase
         $unitOfWork->allows('getEntityFromIdentityMap')->andReturn($t1 = new AnotherTestEntity());
 
         $repo = $factory->getRepository($entityManager, AnotherTestEntity::class);
-
         $this->assertInstanceOf(CustomTestRepository::class, $repo);
+
+        $cache->allows('get')->once()->with($repo, Criteria::class, true)->andReturn(null);
+        $cache->allows('save')->once()->with($repo, Criteria::class, true, $t1)->andReturn(null);
+
         $t2 = $repo->fetchOneByTitle("test");
         $this->assertSame($t1, $t2);
         $this->assertNull($t1->getTitle());

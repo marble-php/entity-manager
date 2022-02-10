@@ -3,6 +3,7 @@ namespace Marble\EntityManager;
 
 use Marble\Entity\Entity;
 use Marble\Entity\EntityReference;
+use Marble\EntityManager\Cache\QueryResultCache;
 use Marble\EntityManager\Exception\EntityNotFoundException;
 use Marble\EntityManager\Read\ReadContext;
 use Marble\EntityManager\Repository\DefaultRepositoryFactory;
@@ -14,12 +15,18 @@ class EntityManager implements ReadContext
     public function __construct(
         private DefaultRepositoryFactory $repositoryFactory,
         private UnitOfWork               $unitOfWork,
+        private QueryResultCache         $queryResultCache = new QueryResultCache(),
     ) {
     }
 
     public function getUnitOfWork(): UnitOfWork
     {
         return $this->unitOfWork;
+    }
+
+    public function getQueryResultCache(): QueryResultCache
+    {
+        return $this->queryResultCache;
     }
 
     public function getRepository(string $className): Repository
@@ -30,7 +37,8 @@ class EntityManager implements ReadContext
     public function fetch(EntityReference $reference): Entity
     {
         return $this->getRepository($reference->getClassName())->fetchOne($reference->getId())
-            ?? throw new EntityNotFoundException(sprintf("%s with identifier %s does not exist.", $reference->getClassName(), (string) $reference->getId()));
+            ?? throw new EntityNotFoundException(sprintf("%s with identifier %s does not exist.",
+                $reference->getClassName(), (string) $reference->getId()));
     }
 
     public function persist(Entity ...$entities): void
@@ -50,5 +58,6 @@ class EntityManager implements ReadContext
     public function flush(): void
     {
         $this->unitOfWork->flush();
+        $this->queryResultCache->clear();
     }
 }
