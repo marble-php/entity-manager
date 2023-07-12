@@ -77,7 +77,7 @@ class DefaultRepository implements Repository
         return $this->entityManager->getQueryResultCache();
     }
 
-    final public function fetchOne(object $query): ?Entity
+    final public function fetchOne(object $query)
     {
         if ($query instanceof Identifier) {
             if ($entity = $this->getUnitOfWork()->getEntityFromIdentityMap($this->getEntityClassName(), $query)) {
@@ -116,7 +116,7 @@ class DefaultRepository implements Repository
         return $entity;
     }
 
-    public function fetchOneBy(array $criteria): ?Entity
+    public function fetchOneBy(array $criteria)
     {
         return $this->fetchOne(new Criteria($criteria));
     }

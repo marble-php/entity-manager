@@ -26,13 +26,13 @@ interface Repository
     /**
      * @return T|null
      */
-    public function fetchOne(object $query): ?Entity;
+    public function fetchOne(object $query);
 
     /**
      * @param array<string, scalar> $criteria
      * @return T|null
      */
-    public function fetchOneBy(array $criteria): ?Entity;
+    public function fetchOneBy(array $criteria);
 
     /**
      * @return list<T>
