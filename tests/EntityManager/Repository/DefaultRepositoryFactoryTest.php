@@ -7,6 +7,8 @@ use Marble\EntityManager\Contract\EntityIoProvider;
 use Marble\EntityManager\Contract\EntityReader;
 use Marble\EntityManager\EntityManager;
 use Marble\EntityManager\Read\Criteria;
+use Marble\EntityManager\Read\DataCollector;
+use Marble\EntityManager\Read\ReadContext;
 use Marble\EntityManager\Read\ResultRow;
 use Marble\EntityManager\Repository\DefaultRepository;
 use Marble\EntityManager\Repository\DefaultRepositoryFactory;
@@ -61,11 +63,24 @@ class DefaultRepositoryFactoryTest extends MockeryTestCase
         $this->assertInstanceOf(DefaultRepository::class, $repo1);
         $this->assertEquals($reader1->getEntityClassName(), $repo1->getEntityClassName());
 
-        $reader2 = Mockery::mock(EntityReader::class);
+        // Second repo uses a reader for BasicTestEntity
+        // Because of the static method, we can't just create another mock of EntityReader and expect it to
+        // return a different entity class name than the first EntityReader mock we created above.
+        // So we need to create an anonymous implementation and pass that into the repo constructor instead.
+
+        $reader2 = new class implements EntityReader {
+            public static function getEntityClassName(): string
+            {
+                return BasicTestEntity::class;
+            }
+
+            public function read(?object $query, DataCollector $dataCollector, ReadContext $context): void
+            {
+            }
+        };
 
         $ioProvider->allows('getCustomRepositoryClass')->with(BasicTestEntity::class)->once()->andReturnNull();
         $ioProvider->allows('getReader')->with(BasicTestEntity::class)->once()->andReturn($reader2);
-        $reader2->allows('getEntityClassName')->atLeast()->once()->andReturn(BasicTestEntity::class);
 
         $repo2 = $factory->getRepository($entityManager, BasicTestEntity::class);
 

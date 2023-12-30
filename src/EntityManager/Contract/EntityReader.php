@@ -13,7 +13,7 @@ interface EntityReader
     /**
      * @return class-string<T>
      */
-    public function getEntityClassName(): string;
+    public static function getEntityClassName(): string;
 
     public function read(?object $query, DataCollector $dataCollector, ReadContext $context): void;
 }

@@ -1,11 +1,14 @@
 <?php
 namespace Marble\Tests\EntityManager\Repository;
 
+use Marble\Entity\Identifier;
 use Marble\Entity\SimpleId;
 use Marble\Entity\Ulid;
 use Marble\EntityManager\Contract\EntityIoProvider;
 use Marble\EntityManager\Contract\EntityReader;
 use Marble\EntityManager\EntityManager;
+use Marble\EntityManager\Read\DataCollector;
+use Marble\EntityManager\Read\ReadContext;
 use Marble\EntityManager\Read\ResultRow;
 use Marble\EntityManager\Repository\DefaultRepository;
 use Marble\EntityManager\Repository\DefaultRepositoryFactory;
@@ -42,6 +45,7 @@ class DefaultRepositoryTest extends MockeryTestCase
         $reader->allows('read')->once()->with($id = new Ulid(), $this->collect(new ResultRow($id, ['name' => 'John Doe'])), $em);
         $repository = new DefaultRepository($reader, $em);
 
+        /** @var BasicTestEntity $t1 */
         $t1 = $repository->fetchOne($id);
 
         $this->assertEquals(BasicTestEntity::class, $repository->getEntityClassName());
@@ -50,13 +54,27 @@ class DefaultRepositoryTest extends MockeryTestCase
         $this->assertEquals('John Doe', $t1->getName());
         $this->assertNull($t1->getDateOfBirth());
 
-        // Second repos uses a reader for AnotherTestEntity
-        $reader2 = Mockery::mock(EntityReader::class);
-        $reader2->allows('getEntityClassName')->atLeast()->once()->andReturn(AnotherTestEntity::class);
-        $reader2->allows('read')->once()->with($id2 = new Ulid(), $this->collect(new ResultRow($id2, ['title' => 'Hooray!'])), $em);
+        // Second repo uses a reader for AnotherTestEntity
+        // Because of the static method, we can't just create another mock of EntityReader and expect it to
+        // return a different entity class name than the first EntityReader mock we created above.
+        // So we need to create an anonymous implementation and pass that into the repo constructor instead.
+
+        $reader2 = new class implements EntityReader {
+            public static function getEntityClassName(): string
+            {
+                return AnotherTestEntity::class;
+            }
+
+            public function read(?object $query, DataCollector $dataCollector, ReadContext $context): void
+            {
+                /** @var Identifier $query */
+                $dataCollector->put($query, ['title' => 'Hooray!']);
+            }
+        };
+
         $repository2 = new DefaultRepository($reader2, $em);
 
-        $t2 = $repository2->fetchOne($id2);
+        $t2 = $repository2->fetchOne($id2 = new Ulid());
 
         $this->assertEquals(AnotherTestEntity::class, $repository2->getEntityClassName());
         $this->assertInstanceOf(AnotherTestEntity::class, $t2);
