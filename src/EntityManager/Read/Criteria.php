@@ -2,12 +2,15 @@
 namespace Marble\EntityManager\Read;
 
 use ArrayAccess;
+use ArrayIterator;
+use IteratorAggregate;
 use Marble\Exception\LogicException;
+use Traversable;
 
 /**
  * @codeCoverageIgnore
  */
-class Criteria implements ArrayAccess
+class Criteria implements ArrayAccess, IteratorAggregate
 {
     /**
      * @param array<string, mixed> $criteria
@@ -52,5 +55,10 @@ class Criteria implements ArrayAccess
         }
         
         return $offset;
+    }
+
+    public function getIterator(): Traversable
+    {
+        return new ArrayIterator($this->criteria);
     }
 }
