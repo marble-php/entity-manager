@@ -60,4 +60,10 @@ class EntityManager implements ReadContext
         $this->unitOfWork->flush();
         $this->queryResultCache->clear();
     }
+
+    public function clear(): void
+    {
+        $this->unitOfWork->clear();
+        $this->queryResultCache->clear();
+    }
 }

@@ -12,6 +12,7 @@ use Marble\EntityManager\Event\FetchedEntityInstantiatedEvent;
 use Marble\EntityManager\Event\EntityRegisteredEvent;
 use Marble\EntityManager\Event\NewEntityRegisteredEvent;
 use Marble\EntityManager\Event\PostFlushEvent;
+use Marble\EntityManager\Event\PreClearEvent;
 use Marble\EntityManager\Event\PreFlushEvent;
 use Marble\EntityManager\Exception\EntitySkippedException;
 use Marble\EntityManager\Write\EntityUpdateContainer;
@@ -412,5 +413,18 @@ class UnitOfWork implements WriteContext
     {
         /** @var array<class-string<T>, ClassInfo<T>> $this->classInfos */
         return $this->classInfos[$className] ?? $this->classInfos[$className] = new ClassInfo($className);
+    }
+
+    public function clear(): void
+    {
+        if ($this->flushing) {
+            throw new LogicException(sprintf("The %s() method must not be called during flush.", __METHOD__));
+        }
+
+        $this->dispatcher?->dispatch(new PreClearEvent());
+
+        $this->classInfos  = [];
+        $this->identityMap = [];
+        $this->entities    = [];
     }
 }

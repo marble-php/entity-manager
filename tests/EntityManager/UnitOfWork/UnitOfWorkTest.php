@@ -12,6 +12,7 @@ use Marble\EntityManager\Event\EntityRemovedEvent;
 use Marble\EntityManager\Event\FetchedEntityInstantiatedEvent;
 use Marble\EntityManager\Event\NewEntityRegisteredEvent;
 use Marble\EntityManager\Event\PostFlushEvent;
+use Marble\EntityManager\Event\PreClearEvent;
 use Marble\EntityManager\Event\PreFlushEvent;
 use Marble\EntityManager\Exception\EntitySkippedException;
 use Marble\EntityManager\UnitOfWork\ObjectNeedle;
@@ -449,5 +450,39 @@ class UnitOfWorkTest extends MockeryTestCase
         $dispatcher->allows('dispatch')->with(PostFlushEvent::class)->once();
 
         $unitOfWork->flush();
+    }
+
+    public function testClear(): void
+    {
+        $ioProvider = Mockery::mock(EntityIoProvider::class);
+        $dispatcher = Mockery::mock(EventDispatcherInterface::class);
+        $unitOfWork = new UnitOfWork($ioProvider, $dispatcher);
+
+        $dispatcher->expects('dispatch')->with(PreClearEvent::class)->once();
+        $dispatcher->allows('dispatch')->with(EntityRegisteredEvent::class)->twice();
+
+        $t1 = new EntityWithSimpleId(1);
+        $t2 = new EntityWithSimpleId(2);
+
+        $unitOfWork->register($t1, []);
+        $unitOfWork->register($t2, []);
+
+        $r1 = $unitOfWork->getEntityFromIdentityMap(EntityWithSimpleId::class, new SimpleId(1));
+        $r2 = $unitOfWork->getEntityFromIdentityMap(EntityWithSimpleId::class, new SimpleId(2));
+        $r3 = $unitOfWork->getEntityFromIdentityMap(EntityWithSimpleId::class, new SimpleId(3));
+
+        $this->assertSame($t1, $r1);
+        $this->assertSame($t2, $r2);
+        $this->assertNull($r3);
+
+        $unitOfWork->clear();
+
+        $x1 = $unitOfWork->getEntityFromIdentityMap(EntityWithSimpleId::class, new SimpleId(1));
+        $x2 = $unitOfWork->getEntityFromIdentityMap(EntityWithSimpleId::class, new SimpleId(2));
+        $x3 = $unitOfWork->getEntityFromIdentityMap(EntityWithSimpleId::class, new SimpleId(3));
+
+        $this->assertNull($x1);
+        $this->assertNull($x2);
+        $this->assertNull($x3);
     }
 }
