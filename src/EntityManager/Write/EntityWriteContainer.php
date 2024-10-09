@@ -13,8 +13,10 @@ class EntityWriteContainer implements Persistable
      * @param T                    $entity
      * @param array<string, mixed> $data
      */
-    public function __construct(private Entity $entity, private array $data)
-    {
+    public function __construct(
+        private readonly Entity $entity,
+        private readonly array  $data,
+    ) {
     }
 
     public function getEntity(): Entity

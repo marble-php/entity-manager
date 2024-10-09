@@ -10,7 +10,7 @@ class ReferenceTree
      */
     private array $references = [];
 
-    public function __construct(private Entity $entity)
+    public function __construct(private readonly Entity $entity)
     {
     }
     

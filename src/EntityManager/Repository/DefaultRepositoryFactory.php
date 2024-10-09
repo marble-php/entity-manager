@@ -16,7 +16,7 @@ class DefaultRepositoryFactory
      */
     private array $repositories = [];
 
-    public function __construct(private EntityIoProvider $ioProvider)
+    public function __construct(private readonly EntityIoProvider $ioProvider)
     {
     }
 

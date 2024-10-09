@@ -23,7 +23,7 @@ final class ResultSetBuilder implements DataCollector
      */
     private array $childClasses = [];
 
-    public function __construct(private EntityReader $reader)
+    public function __construct(private readonly EntityReader $reader)
     {
     }
 

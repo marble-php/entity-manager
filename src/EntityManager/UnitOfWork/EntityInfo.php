@@ -14,7 +14,7 @@ class EntityInfo
      * @param Entity                    $entity
      * @param array<string, mixed>|null $lastSavedData
      */
-    public function __construct(private Entity $entity, private ?array $lastSavedData = null)
+    public function __construct(private readonly Entity $entity, private ?array $lastSavedData = null)
     {
         $this->state = $lastSavedData === null ? EntityState::NEW : EntityState::FETCHED;
 

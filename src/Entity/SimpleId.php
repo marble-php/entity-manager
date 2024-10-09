@@ -3,7 +3,7 @@ namespace Marble\Entity;
 
 class SimpleId implements Identifier
 {
-    public function __construct(private string $id)
+    public function __construct(private readonly string $id)
     {
     }
 

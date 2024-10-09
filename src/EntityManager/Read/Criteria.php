@@ -1,4 +1,5 @@
 <?php
+
 namespace Marble\EntityManager\Read;
 
 use ArrayAccess;
@@ -12,11 +13,44 @@ use Traversable;
  */
 class Criteria implements ArrayAccess, IteratorAggregate
 {
+    private mixed $sortBy = null;
+    private SortDirection $sortDirection = SortDirection::ASC;
+
     /**
      * @param array<string, mixed> $criteria
      */
     public function __construct(private array $criteria)
     {
+    }
+
+    public function getSortBy(): mixed
+    {
+        return $this->sortBy;
+    }
+
+    public function setSortBy(mixed $sortBy): void
+    {
+        $this->sortBy = $sortBy;
+    }
+
+    public function getSortDirection(): SortDirection
+    {
+        return $this->sortDirection;
+    }
+
+    public function setSortDirection(SortDirection $sortDirection): void
+    {
+        $this->sortDirection = $sortDirection;
+    }
+
+    public static function make(array $criteria, mixed $sortBy = null, SortDirection $sortDirection = SortDirection::ASC): static
+    {
+        $criteria = new static($criteria);
+
+        $criteria->setSortBy($sortBy);
+        $criteria->setSortDirection($sortDirection);
+
+        return $criteria;
     }
 
     public function offsetExists(mixed $offset): bool
@@ -44,16 +78,16 @@ class Criteria implements ArrayAccess, IteratorAggregate
     public function offsetUnset(mixed $offset): void
     {
         $offset = $this->parseOffset($offset);
-        
+
         unset($this->criteria[$offset]);
     }
-    
+
     private function parseOffset(mixed $offset): string
     {
         if (!is_string($offset)) {
             throw new LogicException(sprintf("Criteria key must be string (%s provided).", get_debug_type($offset)));
         }
-        
+
         return $offset;
     }
 

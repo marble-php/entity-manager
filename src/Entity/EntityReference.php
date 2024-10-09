@@ -11,8 +11,10 @@ class EntityReference
     /**
      * @param class-string<T> $className
      */
-    public function __construct(private string $className, private Identifier $identifier)
-    {
+    public function __construct(
+        private readonly string $className,
+        private readonly Identifier $identifier,
+    ) {
         if (!class_exists($className)) {
             throw new LogicException(sprintf("Class %s does not exist.", $className));
         } elseif (!is_subclass_of($className, Entity::class)) {

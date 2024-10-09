@@ -49,8 +49,8 @@ class UnitOfWork implements WriteContext
     private bool $flushing = false;
 
     public function __construct(
-        private EntityIoProvider          $ioProvider,
-        private ?EventDispatcherInterface $dispatcher,
+        private readonly EntityIoProvider          $ioProvider,
+        private readonly ?EventDispatcherInterface $dispatcher,
     ) {
         $this->needle           = new ObjectNeedle();
         $this->instantiator     = new Instantiator();

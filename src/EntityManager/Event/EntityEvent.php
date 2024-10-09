@@ -5,7 +5,7 @@ use Marble\Entity\Entity;
 
 abstract class EntityEvent extends Event
 {
-    public function __construct(private Entity $entity)
+    public function __construct(private readonly Entity $entity)
     {
     }
 

@@ -23,8 +23,8 @@ class DefaultRepository implements Repository
      * @param EntityManager   $entityManager
      */
     public function __construct(
-        private EntityReader  $reader,
-        private EntityManager $entityManager,
+        private readonly EntityReader  $reader,
+        private readonly EntityManager $entityManager,
     ) {
         $entityClass = $reader->getEntityClassName();
 

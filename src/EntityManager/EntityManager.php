@@ -13,9 +13,9 @@ use Marble\EntityManager\UnitOfWork\UnitOfWork;
 class EntityManager implements ReadContext
 {
     public function __construct(
-        private DefaultRepositoryFactory $repositoryFactory,
-        private UnitOfWork               $unitOfWork,
-        private QueryResultCache         $queryResultCache = new QueryResultCache(),
+        private readonly DefaultRepositoryFactory $repositoryFactory,
+        private readonly UnitOfWork               $unitOfWork,
+        private readonly QueryResultCache         $queryResultCache = new QueryResultCache(),
     ) {
     }
 

@@ -23,6 +23,7 @@ class ReferenceTreeBuilder extends ReferenceFinder
     private array $trees = [];
 
     /**
+     * @param Entity $entity
      * @param null|callable(Entity): bool $ignore
      * @return array<int, ReferenceTree>
      */
@@ -34,7 +35,9 @@ class ReferenceTreeBuilder extends ReferenceFinder
     }
 
     /**
+     * @param Entity $entity
      * @param null|callable(Entity): bool $ignore
+     * @return ReferenceTree
      */
     public function buildTree(Entity $entity, ?callable $ignore = null): ReferenceTree
     {

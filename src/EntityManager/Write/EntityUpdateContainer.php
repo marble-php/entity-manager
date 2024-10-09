@@ -1,4 +1,5 @@
 <?php
+
 namespace Marble\EntityManager\Write;
 
 use Marble\Entity\Entity;
@@ -10,13 +11,17 @@ use Marble\Entity\Entity;
 class EntityUpdateContainer extends EntityWriteContainer implements HasChanged
 {
     /**
-     * @param T                        $entity
-     * @param array<string, mixed>     $data
-     * @param array<string, mixed>     $originalData
+     * @param T $entity
+     * @param array<string, mixed> $data
+     * @param array<string, mixed> $originalData
      * @param array<array-key, string> $changedProperties
      */
-    public function __construct(Entity $entity, array $data, private array $originalData, private array $changedProperties)
-    {
+    public function __construct(
+        Entity                 $entity,
+        array                  $data,
+        private readonly array $originalData,
+        private readonly array $changedProperties
+    ) {
         parent::__construct($entity, $data);
     }
 

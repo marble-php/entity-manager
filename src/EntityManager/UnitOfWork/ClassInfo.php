@@ -17,7 +17,7 @@ class ClassInfo
     /**
      * @param class-string<T> $className
      */
-    public function __construct(private string $className)
+    public function __construct(private readonly string $className)
     {
         if (!is_subclass_of($className, Entity::class)) {
             throw new LogicException(sprintf("Class %s does not implement the %s interface.", $this->className, Entity::class));

@@ -11,8 +11,10 @@ use Psr\Container\ContainerInterface;
 
 class ContainerAwareRepositoryFactory extends DefaultRepositoryFactory
 {
-    public function __construct(EntityIoProvider $ioProvider, private ContainerInterface $container)
-    {
+    public function __construct(
+        EntityIoProvider $ioProvider,
+        private readonly ContainerInterface $container,
+    ) {
         parent::__construct($ioProvider);
     }
 

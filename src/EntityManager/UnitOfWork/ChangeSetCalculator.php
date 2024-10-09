@@ -10,7 +10,7 @@ class ChangeSetCalculator
 {
     private Factory $comparatorFactory;
 
-    public function __construct(private ObjectNeedle $needle)
+    public function __construct(private readonly ObjectNeedle $needle)
     {
         $this->comparatorFactory = Factory::getInstance();
     }

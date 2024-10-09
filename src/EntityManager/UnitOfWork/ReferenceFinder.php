@@ -6,7 +6,7 @@ use stdClass;
 
 class ReferenceFinder
 {
-    public function __construct(private ObjectNeedle $needle)
+    public function __construct(private readonly ObjectNeedle $needle)
     {
     }
 
