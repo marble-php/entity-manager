@@ -13,14 +13,16 @@ use Traversable;
  */
 class Criteria implements ArrayAccess, IteratorAggregate
 {
-    private mixed $sortBy = null;
-    private SortDirection $sortDirection = SortDirection::ASC;
-
     /**
      * @param array<string, mixed> $criteria
+     * @param mixed $sortBy
+     * @param SortDirection $sortDirection
      */
-    public function __construct(private array $criteria)
-    {
+    public function __construct(
+        private array         $criteria,
+        private mixed         $sortBy = null,
+        private SortDirection $sortDirection = SortDirection::ASC,
+    ) {
     }
 
     public function getSortBy(): mixed
@@ -41,16 +43,6 @@ class Criteria implements ArrayAccess, IteratorAggregate
     public function setSortDirection(SortDirection $sortDirection): void
     {
         $this->sortDirection = $sortDirection;
-    }
-
-    public static function make(array $criteria, mixed $sortBy = null, SortDirection $sortDirection = SortDirection::ASC): static
-    {
-        $criteria = new static($criteria);
-
-        $criteria->setSortBy($sortBy);
-        $criteria->setSortDirection($sortDirection);
-
-        return $criteria;
     }
 
     public function offsetExists(mixed $offset): bool
