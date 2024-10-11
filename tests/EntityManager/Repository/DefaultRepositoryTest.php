@@ -1,6 +1,7 @@
 <?php
 namespace Marble\Tests\EntityManager\Repository;
 
+use Closure;
 use Marble\Entity\Identifier;
 use Marble\Entity\SimpleId;
 use Marble\Entity\Ulid;
@@ -11,7 +12,7 @@ use Marble\EntityManager\Read\DataCollector;
 use Marble\EntityManager\Read\ReadContext;
 use Marble\EntityManager\Read\ResultRow;
 use Marble\EntityManager\Repository\DefaultRepository;
-use Marble\EntityManager\Repository\DefaultRepositoryFactory;
+use Marble\EntityManager\Repository\RepositoryFactory;
 use Marble\EntityManager\UnitOfWork\UnitOfWork;
 use Marble\Exception\LogicException;
 use Marble\Tests\EntityManager\TestImpl\Entity\AbstractTestEntity;
@@ -27,11 +28,7 @@ class DefaultRepositoryTest extends MockeryTestCase
     private function makeEntityManager(): EntityManager
     {
         return new EntityManager(
-            Mockery::mock(DefaultRepositoryFactory::class),
-            new UnitOfWork(
-                Mockery::mock(EntityIoProvider::class),
-                null,
-            ),
+            Mockery::mock(EntityIoProvider::class),
         );
     }
 

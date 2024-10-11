@@ -1,4 +1,5 @@
 <?php
+
 namespace Marble\EntityManager\Read;
 
 use Marble\Entity\Entity;

@@ -23,21 +23,15 @@ class ObjectNeedle
 
         $config = new Configuration($className);
 
+        $config->setGeneratedClassesTargetDir(realpath(__DIR__ . '/../../../var/hydrators'));
+
+        // TODO: move away from ocramius/generated-hydrator, will not support PHP 8.4
         return $this->hydrators[$className] = $config->createFactory()->getHydrator();
     }
 
     public function hydrate(object $object, array $data): void
     {
-        try {
-            $this->getHydrator($object)->hydrate($data, $object);
-        } catch (Throwable $throwable) {
-            preg_match('/Typed property (.*) must not be accessed before initialization/', $throwable->getMessage(), $matches);
-
-            $message = count($matches) < 2 ? $throwable->getMessage()
-                : sprintf("Entity property %s is typed, required and without default, but the hydrator did not receive a value for it.", $matches[1]);
-
-            throw new LogicException($message, 0, $throwable);
-        }
+        $this->getHydrator($object)->hydrate($data, $object);
     }
 
     /**

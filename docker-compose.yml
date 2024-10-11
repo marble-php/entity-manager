@@ -1,14 +1,12 @@
-version: "3.4"
-
 services:
-    php:
-        build:
-            context: .
-            dockerfile: docker/php/Dockerfile
-        volumes:
-            - .:/usr/src/marble
-        environment:
-            - PHP_IDE_CONFIG=serverName=marble-em
-            - XDEBUG_MODE=develop,debug,coverage
-            - XDEBUG_TRIGGER=1
-            - XDEBUG_CONFIG=idekey=PHPSTORM
+  php:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+    volumes:
+      - .:/var/www/html
+    environment:
+      - PHP_IDE_CONFIG=serverName=marble-entity-manager
+      - XDEBUG_MODE=develop,debug,coverage
+      - XDEBUG_TRIGGER=1
+      - XDEBUG_CONFIG=idekey=PHPSTORM

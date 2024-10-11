@@ -40,7 +40,7 @@ class DefaultRepository implements Repository
     /**
      * @return class-string<T>
      */
-    final public function getEntityClassName(): string
+    public function getEntityClassName(): string
     {
         return $this->reader->getEntityClassName();
     }
@@ -77,7 +77,7 @@ class DefaultRepository implements Repository
         return $this->entityManager->getQueryResultCache();
     }
 
-    final public function fetchOne(object $query)
+    public function fetchOne(object $query)
     {
         if ($query instanceof Identifier) {
             if ($entity = $this->getUnitOfWork()->getEntityFromIdentityMap($this->getEntityClassName(), $query)) {
@@ -87,7 +87,8 @@ class DefaultRepository implements Repository
             $cached = $this->getCache()->get($this, $query, true);
 
             if ($cached !== null) {
-                return empty($cached) ? null : reset($cached);
+                /** @var list<T> $cached */
+                return $cached[0];
             }
         }
 
@@ -121,7 +122,7 @@ class DefaultRepository implements Repository
         return $this->fetchOne(new Criteria($criteria));
     }
 
-    final public function fetchMany(?object $query): array
+    public function fetchMany(?object $query): array
     {
         if ($query instanceof Identifier) {
             throw new LogicException(sprintf("Query argument to %s must not be an identifier.", __METHOD__));
@@ -130,6 +131,7 @@ class DefaultRepository implements Repository
         $cached = $this->getCache()->get($this, $query, false);
 
         if ($cached !== null) {
+            /** @var list<T> $cached */
             return $cached;
         }
 
@@ -166,7 +168,7 @@ class DefaultRepository implements Repository
         return $this->fetchMany(new Criteria($criteria));
     }
 
-    final public function fetchAll(): array
+    public function fetchAll(): array
     {
         return $this->fetchMany(null);
     }

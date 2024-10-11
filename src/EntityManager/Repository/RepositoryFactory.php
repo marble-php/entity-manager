@@ -1,28 +1,29 @@
 <?php
+
 namespace Marble\EntityManager\Repository;
 
 use Marble\Entity\Entity;
 use Marble\EntityManager\Contract\EntityIoProvider;
-use Marble\EntityManager\Contract\EntityReader;
 use Marble\EntityManager\EntityManager;
 use Marble\Exception\LogicException;
 use ReflectionClass;
 use ReflectionException;
 
-class DefaultRepositoryFactory
+class RepositoryFactory
 {
     /**
      * @var array<string, Repository<Entity>>
      */
     private array $repositories = [];
 
-    public function __construct(private readonly EntityIoProvider $ioProvider)
-    {
+    public function __construct(
+        private readonly EntityIoProvider $ioProvider,
+    ) {
     }
 
     /**
      * @template T of Entity
-     * @param EntityManager   $entityManager
+     * @param EntityManager $entityManager
      * @param class-string<T> $className
      * @return Repository<T>
      */
@@ -46,7 +47,7 @@ class DefaultRepositoryFactory
 
     /**
      * @template T of Entity
-     * @param EntityManager   $entityManager
+     * @param EntityManager $entityManager
      * @param class-string<T> $className
      * @return Repository<T>
      */
@@ -69,34 +70,6 @@ class DefaultRepositoryFactory
             throw new LogicException($errorMessage);
         }
 
-        if ($customRepositoryClass = $this->ioProvider->getCustomRepositoryClass($className)) {
-            $repo = $this->createCustomRepository($customRepositoryClass, $reader, $entityManager);
-
-            if (!is_subclass_of($repo, DefaultRepository::class)) {
-                throw new LogicException(sprintf("Custom repository %s for entity %s does not extend %s.",
-                    $repo::class, $className, DefaultRepository::class));
-            }
-
-            return $repo;
-        }
-
         return new DefaultRepository($reader, $entityManager);
-    }
-
-    /**
-     * @template T of Entity
-     * @param class-string<Repository<T>> $repositoryClassName
-     * @param EntityReader                $entityReader
-     * @param EntityManager               $entityManager
-     * @return Repository<T>
-     */
-    protected function createCustomRepository(string $repositoryClassName, EntityReader $entityReader, EntityManager $entityManager): Repository
-    {
-        if (!is_subclass_of($repositoryClassName, DefaultRepository::class)) {
-            throw new LogicException(sprintf("Custom repository class %s for entity %s does not extend %s.",
-                $repositoryClassName, $entityReader->getEntityClassName(), DefaultRepository::class));
-        }
-
-        return new $repositoryClassName($entityReader, $entityManager);
     }
 }

@@ -1,9 +1,10 @@
 <?php
+
 namespace Marble\Tests\EntityManager\UnitOfWork;
 
 use DateTime;
+use Error;
 use Marble\EntityManager\UnitOfWork\ObjectNeedle;
-use Marble\Exception\LogicException;
 use Marble\Tests\EntityManager\TestImpl\Entity\AnotherTestEntity;
 use Marble\Tests\EntityManager\TestImpl\Entity\BasicTestEntity;
 use Marble\Tests\EntityManager\TestImpl\Entity\TestEntityWithRequiredPropertyWithoutDefault;
@@ -31,13 +32,16 @@ class ObjectNeedleTest extends MockeryTestCase
         $this->assertSame($d1, $data['dateOfBirth']);
     }
 
-    public function testEntityHydrationFailsWithoutRequiredValue(): void
+    public function testEntityHydrationWithoutRequiredValueDoesntFail(): void
     {
         $needle = new ObjectNeedle();
+        $entity = new TestEntityWithRequiredPropertyWithoutDefault();
 
         // Not passing a value for `city`, a typed, required property without default.
-        $this->expectException(LogicException::class);
-        $needle->hydrate(new TestEntityWithRequiredPropertyWithoutDefault(), []);
+        $needle->hydrate($entity, []);
+
+        $this->expectException(Error::class);
+        $this->assertNull($entity->getCity());
     }
 
 }

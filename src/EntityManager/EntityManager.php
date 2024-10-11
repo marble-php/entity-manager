@@ -1,22 +1,30 @@
 <?php
+
 namespace Marble\EntityManager;
 
 use Marble\Entity\Entity;
 use Marble\Entity\EntityReference;
 use Marble\EntityManager\Cache\QueryResultCache;
+use Marble\EntityManager\Contract\EntityIoProvider;
 use Marble\EntityManager\Exception\EntityNotFoundException;
 use Marble\EntityManager\Read\ReadContext;
-use Marble\EntityManager\Repository\DefaultRepositoryFactory;
 use Marble\EntityManager\Repository\Repository;
+use Marble\EntityManager\Repository\RepositoryFactory;
 use Marble\EntityManager\UnitOfWork\UnitOfWork;
+use Psr\EventDispatcher\EventDispatcherInterface;
 
 class EntityManager implements ReadContext
 {
+    private UnitOfWork $unitOfWork;
+    private RepositoryFactory $repositoryFactory;
+
     public function __construct(
-        private readonly DefaultRepositoryFactory $repositoryFactory,
-        private readonly UnitOfWork               $unitOfWork,
-        private readonly QueryResultCache         $queryResultCache = new QueryResultCache(),
+        EntityIoProvider                  $ioProvider,
+        ?EventDispatcherInterface         $dispatcher = null,
+        private readonly QueryResultCache $queryResultCache = new QueryResultCache(),
     ) {
+        $this->unitOfWork        = new UnitOfWork($ioProvider, $dispatcher);
+        $this->repositoryFactory = new RepositoryFactory($ioProvider);
     }
 
     public function getUnitOfWork(): UnitOfWork

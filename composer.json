@@ -29,11 +29,9 @@
         "mockery/mockery": "^1.4",
         "phpunit/phpunit": "^9.5",
         "symfony/uid": "^5.3",
-        "psr/container": "^2.0",
         "vimeo/psalm": "^4.16"
     },
     "suggest": {
-        "psr/container": "If you want to use the provided container-aware repository factory.",
         "symfony/uid": "If you want to use the provided ULID implementation of the Identifier interface."
     },
     "autoload": {

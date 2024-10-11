@@ -1,12 +1,13 @@
 <?php
+
 namespace Marble\Tests\EntityManager;
 
 use Marble\Entity\EntityReference;
-use Marble\EntityManager\Exception\EntityNotFoundException;
 use Marble\Entity\SimpleId;
-use Marble\EntityManager\EntityManager;
-use Marble\EntityManager\Repository\DefaultRepositoryFactory;
+use Marble\EntityManager\Contract\EntityIoProvider;
+use Marble\EntityManager\Exception\EntityNotFoundException;
 use Marble\EntityManager\Repository\Repository;
+use Marble\EntityManager\Repository\RepositoryFactory;
 use Marble\EntityManager\UnitOfWork\UnitOfWork;
 use Marble\Tests\EntityManager\TestImpl\Entity\AbstractTestEntity;
 use Marble\Tests\EntityManager\TestImpl\Entity\BasicTestEntity;
@@ -17,11 +18,13 @@ use Mockery\Adapter\Phpunit\MockeryTestCase;
 
 class EntityManagerTest extends MockeryTestCase
 {
+    use EntityManagerTestingTrait;
+
     public function testFetching(): void
     {
-        $repositoryFactory = Mockery::mock(DefaultRepositoryFactory::class);
-        $unitOfWork        = Mockery::mock(UnitOfWork::class);
-        $entityManager     = new EntityManager($repositoryFactory, $unitOfWork);
+        $ioProvider        = Mockery::mock(EntityIoProvider::class);
+        $repositoryFactory = Mockery::mock(RepositoryFactory::class);
+        $entityManager     = $this->makeEntityManager($ioProvider, repositoryFactory: $repositoryFactory);
         $repo              = Mockery::mock(Repository::class);
 
         $t1   = new EntityWithSimpleId(1);
@@ -45,9 +48,9 @@ class EntityManagerTest extends MockeryTestCase
 
     public function testPersisting(): void
     {
-        $repositoryFactory = Mockery::mock(DefaultRepositoryFactory::class);
-        $unitOfWork        = Mockery::mock(UnitOfWork::class);
-        $entityManager     = new EntityManager($repositoryFactory, $unitOfWork);
+        $ioProvider    = Mockery::mock(EntityIoProvider::class);
+        $unitOfWork    = Mockery::mock(UnitOfWork::class);
+        $entityManager = $this->makeEntityManager($ioProvider, $unitOfWork);
 
         $t1 = new EntityWithSimpleId(1);
         $t2 = new EntityWithSimpleId(2);
