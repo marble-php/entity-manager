@@ -23,8 +23,6 @@ class ObjectNeedle
 
         $config = new Configuration($className);
 
-        $config->setGeneratedClassesTargetDir(realpath(__DIR__ . '/../../../var/hydrators'));
-
         // TODO: move away from ocramius/generated-hydrator, will not support PHP 8.4
         return $this->hydrators[$className] = $config->createFactory()->getHydrator();
     }
