@@ -5,6 +5,7 @@ namespace Marble\Tests\EntityManager;
 use Marble\Entity\EntityReference;
 use Marble\Entity\SimpleId;
 use Marble\EntityManager\Contract\EntityIoProvider;
+use Marble\EntityManager\EntityManager;
 use Marble\EntityManager\Exception\EntityNotFoundException;
 use Marble\EntityManager\Repository\Repository;
 use Marble\EntityManager\Repository\RepositoryFactory;
@@ -16,24 +17,29 @@ use Marble\Tests\EntityManager\TestImpl\Entity\ExtendedBasicTestEntity;
 use Mockery;
 use Mockery\Adapter\Phpunit\MockeryTestCase;
 
+/**
+ * @runTestsInSeparateProcesses
+ * @preserveGlobalState disabled
+ */
 class EntityManagerTest extends MockeryTestCase
 {
-    use EntityManagerTestingTrait;
-
     public function testFetching(): void
     {
+        Mockery::mock('overload:' . UnitOfWork::class);
+
         $ioProvider        = Mockery::mock(EntityIoProvider::class);
-        $repositoryFactory = Mockery::mock(RepositoryFactory::class);
-        $entityManager     = $this->makeEntityManager($ioProvider, repositoryFactory: $repositoryFactory);
+        $repositoryFactory = Mockery::mock('overload:' . RepositoryFactory::class);
         $repo              = Mockery::mock(Repository::class);
+        $t1                = new EntityWithSimpleId(1);
+        $ref1              = EntityReference::create($t1);
 
-        $t1   = new EntityWithSimpleId(1);
-        $ref1 = EntityReference::create($t1);
+        $repositoryFactory->shouldReceive('getRepository')->twice()
+            ->with(Mockery::type(EntityManager::class), $ref1->getClassName())->andReturn($repo);
 
-        $repositoryFactory->allows('getRepository')->with($entityManager, $ref1->getClassName())->twice()->andReturn($repo);
-        $repo->allows('fetchOne')->with($ref1->getId())->once()->andReturn($t1);
+        $repo->shouldReceive('fetchOne')->with($ref1->getId())->once()->andReturn($t1);
 
-        $t2 = $entityManager->fetch($ref1);
+        $entityManager = new EntityManager($ioProvider);
+        $t2            = $entityManager->fetch($ref1);
 
         $this->assertSame($t2, $t1);
         $this->assertTrue($ref1->refersTo($t1));
@@ -48,25 +54,22 @@ class EntityManagerTest extends MockeryTestCase
 
     public function testPersisting(): void
     {
-        $ioProvider    = Mockery::mock(EntityIoProvider::class);
-        $unitOfWork    = Mockery::mock(UnitOfWork::class);
-        $entityManager = $this->makeEntityManager($ioProvider, $unitOfWork);
+        Mockery::mock('overload:' . RepositoryFactory::class);
 
-        $t1 = new EntityWithSimpleId(1);
-        $t2 = new EntityWithSimpleId(2);
+        $ioProvider = Mockery::mock(EntityIoProvider::class);
+        $unitOfWork = Mockery::mock('overload:' . UnitOfWork::class);
+        $t1         = new EntityWithSimpleId(1);
+        $t2         = new EntityWithSimpleId(2);
 
-        $unitOfWork->allows('register')->with($t1)->once();
-        $unitOfWork->allows('register')->with($t2)->once();
+        $unitOfWork->expects('register')->with($t1)->once();
+        $unitOfWork->expects('register')->with($t2)->once();
+        $unitOfWork->expects('queueRemoval')->with($t1)->once();
+        $unitOfWork->expects('queueRemoval')->with($t2)->once();
+        $unitOfWork->expects('flush')->once();
 
+        $entityManager = new EntityManager($ioProvider);
         $entityManager->persist($t1, $t2);
-
-        $unitOfWork->allows('queueRemoval')->with($t1)->once();
-        $unitOfWork->allows('queueRemoval')->with($t2)->once();
-
         $entityManager->remove($t2, $t1);
-
-        $unitOfWork->allows('flush')->once();
-
         $entityManager->flush();
     }
 

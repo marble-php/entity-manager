@@ -15,8 +15,8 @@ use Psr\EventDispatcher\EventDispatcherInterface;
 
 class EntityManager implements ReadContext
 {
-    private UnitOfWork $unitOfWork;
-    private RepositoryFactory $repositoryFactory;
+    private readonly UnitOfWork $unitOfWork;
+    private readonly RepositoryFactory $repositoryFactory;
 
     public function __construct(
         EntityIoProvider                  $ioProvider,
