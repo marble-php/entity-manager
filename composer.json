@@ -19,20 +19,20 @@
     ],
     "require": {
         "php": "^8.1",
-        "doctrine/instantiator": "^1.4",
+        "doctrine/instantiator": "^1.4|^2.0",
         "ocramius/generated-hydrator": "^4.2",
-        "sebastian/comparator": "^4.0",
-        "sebastian/exporter": "^4.0",
+        "sebastian/comparator": "^4.0|^5.0",
+        "sebastian/exporter": "^4.0|^5.0",
         "psr/event-dispatcher": "^1.0"
     },
     "require-dev": {
         "mockery/mockery": "^1.4",
-        "phpunit/phpunit": "^9.5",
-        "symfony/uid": "^5.3",
-        "vimeo/psalm": "^4.16"
+        "phpunit/phpunit": "^10",
+        "symfony/uid": "^6.2",
+        "vimeo/psalm": "^5.0"
     },
     "suggest": {
-        "symfony/uid": "If you want to use the provided ULID implementation of the Identifier interface."
+        "symfony/uid": "If you want to use the provided UUID and ULID implementation of the Identifier interface."
     },
     "autoload": {
         "psr-4": {

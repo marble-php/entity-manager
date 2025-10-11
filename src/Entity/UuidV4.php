@@ -3,6 +3,6 @@ namespace Marble\Entity;
 
 use Symfony\Component\Uid\UuidV4 as SymfonyUuidV4;
 
-class Uuid extends SymfonyUuidV4 implements Identifier
+class UuidV4 extends SymfonyUuidV4 implements Identifier
 {
 }
