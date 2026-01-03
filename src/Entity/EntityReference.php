@@ -5,6 +5,7 @@ use Marble\Exception\LogicException;
 
 /**
  * @template T of Entity
+ * @api
  */
 class EntityReference
 {

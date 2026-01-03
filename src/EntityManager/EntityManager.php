@@ -13,6 +13,9 @@ use Marble\EntityManager\Repository\RepositoryFactory;
 use Marble\EntityManager\UnitOfWork\UnitOfWork;
 use Psr\EventDispatcher\EventDispatcherInterface;
 
+/**
+ * @api
+ */
 class EntityManager implements ReadContext
 {
     private readonly UnitOfWork $unitOfWork;
@@ -37,11 +40,13 @@ class EntityManager implements ReadContext
         return $this->queryResultCache;
     }
 
+    #[\Override]
     public function getRepository(string $className): Repository
     {
         return $this->repositoryFactory->getRepository($this, $className);
     }
 
+    #[\Override]
     public function fetch(EntityReference $reference): Entity
     {
         return $this->getRepository($reference->getClassName())->fetchOne($reference->getId())

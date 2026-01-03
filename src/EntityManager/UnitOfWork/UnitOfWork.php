@@ -1,8 +1,6 @@
 <?php
 namespace Marble\EntityManager\UnitOfWork;
 
-use Doctrine\Instantiator\Exception\ExceptionInterface;
-use Doctrine\Instantiator\Instantiator;
 use Marble\Entity\Entity;
 use Marble\Entity\Identifier;
 use Marble\EntityManager\Contract\EntityIoProvider;
@@ -20,13 +18,15 @@ use Marble\EntityManager\Write\EntityWriteContainer;
 use Marble\EntityManager\Write\WriteContext;
 use Marble\Exception\LogicException;
 use Psr\EventDispatcher\EventDispatcherInterface;
+use ReflectionException;
+use Symfony\Component\VarExporter\Exception\ExceptionInterface;
+use Symfony\Component\VarExporter\Instantiator;
 
-class UnitOfWork implements WriteContext
+final class UnitOfWork implements WriteContext
 {
     public const DEFAULT_ENTITY_ID_PROPERTY = 'id';
 
     private ObjectNeedle $needle;
-    private Instantiator $instantiator;
     private ChangeSetCalculator $changeCalculator;
 
     /**
@@ -53,7 +53,6 @@ class UnitOfWork implements WriteContext
         private readonly ?EventDispatcherInterface $dispatcher,
     ) {
         $this->needle           = new ObjectNeedle();
-        $this->instantiator     = new Instantiator();
         $this->changeCalculator = new ChangeSetCalculator($this->needle);
     }
 
@@ -82,19 +81,19 @@ class UnitOfWork implements WriteContext
             throw new LogicException(sprintf("Class %s does not implement the %s interface.", $className, Entity::class));
         }
 
-        try {
-            /** @var T $entity */
-            $entity = $this->instantiator->instantiate($className);
-        } catch (ExceptionInterface $exception) {
-            throw new LogicException($exception->getMessage(), 0, $exception);
-        }
-
         if (!in_array($identifier, $data, true) && !isset($data[self::DEFAULT_ENTITY_ID_PROPERTY])) {
             // Include identifier in hydration if it's not included yet.
             $data[self::DEFAULT_ENTITY_ID_PROPERTY] = $identifier;
         }
 
-        $this->needle->hydrate($entity, $data);
+        try {
+            /** @var T $entity */
+            $entity = Instantiator::instantiate($className);
+
+            $this->needle->hydrate($entity, $data);
+        } catch (ExceptionInterface|ReflectionException $exception) {
+            throw new LogicException($exception->getMessage(), 0, $exception);
+        }
 
         if ($entity->getId() === null) {
             throw new LogicException(sprintf("Hydrated %s entity should have identifier %s, has no identifier.", $className, (string) $identifier));
@@ -198,6 +197,7 @@ class UnitOfWork implements WriteContext
      * associations, we cannot know which associations should be removed and which should not.
      * It is up to the relevant EntityWriter to do an appropriate cascade-delete.
      */
+    #[\Override]
     public function queueRemoval(Entity $entity): void
     {
         if ($info = $this->entities[spl_object_id($entity)] ?? null) {
@@ -363,6 +363,7 @@ class UnitOfWork implements WriteContext
 
     // ALLOWING ENTITY WRITERS TO WRITE/DELETE ASSOCIATED ENTITIES
 
+    #[\Override]
     public function markPersisted(Entity $entity): void
     {
         if (!$this->flushing) {
@@ -383,6 +384,7 @@ class UnitOfWork implements WriteContext
         $this->dispatcher?->dispatch(new EntityPersistedEvent($entity));
     }
 
+    #[\Override]
     public function markRemoved(Entity $entity): void
     {
         if (!$this->flushing) {
@@ -397,6 +399,7 @@ class UnitOfWork implements WriteContext
         }
     }
 
+    #[\Override]
     public function cancelRemoval(Entity $entity): void
     {
         if ($info = $this->entities[spl_object_id($entity)] ?? null) {
@@ -411,8 +414,10 @@ class UnitOfWork implements WriteContext
      */
     private function getClassInfo(string $className): ClassInfo
     {
-        /** @var array<class-string<T>, ClassInfo<T>> $this->classInfos */
-        return $this->classInfos[$className] ?? $this->classInfos[$className] = new ClassInfo($className);
+        /** @var ClassInfo<T> $classInfo */
+        $classInfo = $this->classInfos[$className] ??= new ClassInfo($className);
+
+        return $classInfo;
     }
 
     public function clear(): void

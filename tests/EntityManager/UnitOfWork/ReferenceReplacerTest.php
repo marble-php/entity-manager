@@ -65,7 +65,7 @@ class ReferenceReplacerTest extends MockeryTestCase
         $replacer->replaceReference($t1, $incorrectPath, new TestEntityWithObjectProps());
     }
 
-    public function getIncorrectPaths(): array
+    public static function getIncorrectPaths(): array
     {
         return [
             [['foz', 'bar', 1, 't2']],

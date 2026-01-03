@@ -6,7 +6,7 @@ use SebastianBergmann\Comparator\ComparisonFailure;
 use SebastianBergmann\Comparator\Exception;
 use SebastianBergmann\Comparator\Factory;
 
-class ChangeSetCalculator
+final class ChangeSetCalculator
 {
     private Factory $comparatorFactory;
 

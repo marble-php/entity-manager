@@ -19,11 +19,13 @@ class EntityWriteContainer implements Persistable
     ) {
     }
 
+    #[\Override]
     public function getEntity(): Entity
     {
         return $this->entity;
     }
 
+    #[\Override]
     public function getData(): array
     {
         return $this->data;

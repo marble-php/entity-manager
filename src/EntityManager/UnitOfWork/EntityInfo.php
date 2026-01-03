@@ -4,7 +4,7 @@ namespace Marble\EntityManager\UnitOfWork;
 use Marble\Entity\Entity;
 use Marble\Exception\LogicException;
 
-class EntityInfo
+final class EntityInfo
 {
     private EntityState $state;
     private bool $toBeRemoved = false;

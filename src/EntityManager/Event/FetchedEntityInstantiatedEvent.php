@@ -1,6 +1,6 @@
 <?php
 namespace Marble\EntityManager\Event;
 
-class FetchedEntityInstantiatedEvent extends EntityEvent
+final class FetchedEntityInstantiatedEvent extends EntityEvent
 {
 }

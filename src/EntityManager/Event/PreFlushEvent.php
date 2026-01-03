@@ -1,6 +1,6 @@
 <?php
 namespace Marble\EntityManager\Event;
 
-class PreFlushEvent extends Event
+final class PreFlushEvent extends Event
 {
 }

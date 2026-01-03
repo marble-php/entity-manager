@@ -2,6 +2,6 @@
 
 namespace Marble\EntityManager\Event;
 
-class PreClearEvent extends Event
+final class PreClearEvent extends Event
 {
 }

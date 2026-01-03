@@ -6,6 +6,9 @@ use Countable;
 use IteratorAggregate;
 use Traversable;
 
+/**
+ * @template-implements IteratorAggregate<array-key, ResultRow>
+ */
 final class ResultSet implements Countable, IteratorAggregate
 {
     /** @var ResultRow[] */
@@ -16,6 +19,7 @@ final class ResultSet implements Countable, IteratorAggregate
         $this->results = $results;
     }
 
+    #[\Override]
     public function count(): int
     {
         return count($this->results);
@@ -29,6 +33,7 @@ final class ResultSet implements Countable, IteratorAggregate
     /**
      * @return Traversable<array-key, ResultRow>
      */
+    #[\Override]
     public function getIterator(): Traversable
     {
         return new ArrayIterator($this->results);

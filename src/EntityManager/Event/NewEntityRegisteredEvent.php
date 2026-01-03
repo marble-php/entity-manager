@@ -1,6 +1,6 @@
 <?php
 namespace Marble\EntityManager\Event;
 
-class NewEntityRegisteredEvent extends EntityRegisteredEvent
+final class NewEntityRegisteredEvent extends EntityRegisteredEvent
 {
 }

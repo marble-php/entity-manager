@@ -3,7 +3,7 @@ namespace Marble\EntityManager\UnitOfWork;
 
 use Marble\Entity\Entity;
 
-class ReferenceTree
+final class ReferenceTree
 {
     /**
      * @var array<string, ReferenceTree>

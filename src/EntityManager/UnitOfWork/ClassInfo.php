@@ -1,4 +1,5 @@
 <?php
+
 namespace Marble\EntityManager\UnitOfWork;
 
 use Marble\Entity\Entity;
@@ -7,7 +8,7 @@ use Marble\Exception\LogicException;
 /**
  * @template T of Entity
  */
-class ClassInfo
+final class ClassInfo
 {
     /**
      * @var list<class-string<Entity>>|null
@@ -43,8 +44,13 @@ class ClassInfo
     {
         if ($this->parentClasses === null) {
             $this->parentClasses = [];
+            $parentClasses       = class_parents($this->className);
 
-            foreach (class_parents($this->className) as $parent) {
+            assert(is_array($parentClasses));
+
+            foreach ($parentClasses as $parent) {
+                /** @var class-string<Entity> $parent */
+
                 if (!is_subclass_of($parent, Entity::class)) {
                     break; // Stop at the nearest ancestor that does not implement the Entity interface.
                 }

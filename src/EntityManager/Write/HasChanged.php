@@ -1,6 +1,11 @@
 <?php
 namespace Marble\EntityManager\Write;
 
+use Marble\Entity\Entity;
+
+/**
+ * @extends Persistable<Entity>
+ */
 interface HasChanged extends Persistable
 {
     /**

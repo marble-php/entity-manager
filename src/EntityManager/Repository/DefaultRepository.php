@@ -16,7 +16,7 @@ use Marble\Exception\LogicException;
  * @template T of Entity
  * @implements Repository<T>
  */
-class DefaultRepository implements Repository
+final class DefaultRepository implements Repository
 {
     /**
      * @param EntityReader<T> $reader
@@ -40,11 +40,13 @@ class DefaultRepository implements Repository
     /**
      * @return class-string<T>
      */
+    #[\Override]
     public function getEntityClassName(): string
     {
         return $this->reader->getEntityClassName();
     }
 
+    #[\Override]
     public function add(Entity $entity): void
     {
         $className = $this->getEntityClassName();
@@ -56,6 +58,7 @@ class DefaultRepository implements Repository
         $this->entityManager->persist($entity);
     }
 
+    #[\Override]
     public function remove(Entity $entity): void
     {
         $className = $this->getEntityClassName();
@@ -77,6 +80,7 @@ class DefaultRepository implements Repository
         return $this->entityManager->getQueryResultCache();
     }
 
+    #[\Override]
     public function fetchOne(object $query)
     {
         if ($query instanceof Identifier) {
@@ -117,11 +121,13 @@ class DefaultRepository implements Repository
         return $entity;
     }
 
+    #[\Override]
     public function fetchOneBy(array $criteria)
     {
         return $this->fetchOne(new Criteria($criteria));
     }
 
+    #[\Override]
     public function fetchMany(?object $query): array
     {
         if ($query instanceof Identifier) {
@@ -163,11 +169,13 @@ class DefaultRepository implements Repository
             ?? $this->getUnitOfWork()->instantiate($row->childClass ?? $this->getEntityClassName(), $row->identifier, $row->data);
     }
 
+    #[\Override]
     public function fetchManyBy(array $criteria): array
     {
         return $this->fetchMany(new Criteria($criteria));
     }
 
+    #[\Override]
     public function fetchAll(): array
     {
         return $this->fetchMany(null);

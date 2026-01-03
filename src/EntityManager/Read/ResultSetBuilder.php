@@ -27,6 +27,7 @@ final class ResultSetBuilder implements DataCollector
     {
     }
 
+    #[\Override]
     public function put(Identifier $identifier, array $data, ?string $subclass = null): void
     {
         if ($subclass) {
@@ -39,12 +40,14 @@ final class ResultSetBuilder implements DataCollector
         }
     }
 
+    #[\Override]
     public function putProperty(Identifier $identifier, string $propertyName, mixed $value): void
     {
         $this->identifiers[(string) $identifier]         = $identifier;
         $this->data[(string) $identifier][$propertyName] = $value;
     }
 
+    #[\Override]
     public function putClass(Identifier $identifier, string $class): void
     {
         if (!class_exists($class)) {

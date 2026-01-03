@@ -8,6 +8,7 @@ use SebastianBergmann\Exporter\Exporter;
 
 /**
  * @template T of Entity
+ * @api
  */
 class QueryResultCache
 {
@@ -54,7 +55,7 @@ class QueryResultCache
     {
         $export = $this->exporter->export($query, 2);
 
-        return md5($export) . $one;
+        return md5($export) . (string) $one;
     }
 
     public function clear(): void

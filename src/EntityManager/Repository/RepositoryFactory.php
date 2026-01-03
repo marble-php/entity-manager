@@ -9,7 +9,7 @@ use Marble\Exception\LogicException;
 use ReflectionClass;
 use ReflectionException;
 
-class RepositoryFactory
+final class RepositoryFactory
 {
     /**
      * @var array<string, Repository<Entity>>

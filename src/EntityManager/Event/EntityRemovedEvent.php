@@ -1,6 +1,6 @@
 <?php
 namespace Marble\EntityManager\Event;
 
-class EntityRemovedEvent extends EntityEvent
+final class EntityRemovedEvent extends EntityEvent
 {
 }

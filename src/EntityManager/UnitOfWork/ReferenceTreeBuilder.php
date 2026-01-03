@@ -4,7 +4,7 @@ namespace Marble\EntityManager\UnitOfWork;
 use Marble\Entity\Entity;
 use Marble\Exception\LogicException;
 
-class ReferenceTreeBuilder extends ReferenceFinder
+final class ReferenceTreeBuilder extends ReferenceFinder
 {
     /**
      * Evaluation stack. As the evaluation cascades through associated entities,

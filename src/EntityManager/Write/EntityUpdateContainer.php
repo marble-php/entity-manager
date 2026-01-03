@@ -8,7 +8,7 @@ use Marble\Entity\Entity;
  * @template T of Entity
  * @extends EntityWriteContainer<T>
  */
-class EntityUpdateContainer extends EntityWriteContainer implements HasChanged
+final class EntityUpdateContainer extends EntityWriteContainer implements HasChanged
 {
     /**
      * @param T $entity
@@ -25,11 +25,13 @@ class EntityUpdateContainer extends EntityWriteContainer implements HasChanged
         parent::__construct($entity, $data);
     }
 
+    #[\Override]
     public function getOriginalData(): array
     {
         return $this->originalData;
     }
 
+    #[\Override]
     public function getChangedProperties(): array
     {
         return array_values($this->changedProperties);

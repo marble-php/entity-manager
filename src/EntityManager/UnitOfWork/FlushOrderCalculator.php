@@ -3,7 +3,7 @@ namespace Marble\EntityManager\UnitOfWork;
 
 use Marble\Entity\Entity;
 
-class FlushOrderCalculator
+final class FlushOrderCalculator
 {
     /**
      * @param ReferenceTree ...$nodes

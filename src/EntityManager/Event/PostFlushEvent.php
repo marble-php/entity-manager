@@ -1,6 +1,6 @@
 <?php
 namespace Marble\EntityManager\Event;
 
-class PostFlushEvent extends Event
+final class PostFlushEvent extends Event
 {
 }

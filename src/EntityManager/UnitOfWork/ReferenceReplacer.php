@@ -6,10 +6,12 @@ use Marble\Entity\Entity;
 use Marble\Exception\LogicException;
 use stdClass;
 
-class ReferenceReplacer
+final class ReferenceReplacer
 {
     /**
      * @psalm-suppress MixedAssignment
+     * @psalm-suppress UnsupportedReferenceUsage
+     * @psalm-suppress ReferenceReusedFromConfusingScope
      */
     public function replaceReference(Entity $entity, array $path, Entity $reference): void
     {
@@ -17,7 +19,8 @@ class ReferenceReplacer
             throw new LogicException(sprintf("Path to replace %s in %s must not be empty.", $reference::class, LogicException::strEntity($entity)));
         }
 
-        $target =& $entity;
+        /** @var object|array $target */
+        $target = $entity;
 
         foreach (array_values($path) as $index => $segment) {
             if (is_object($target)) {
@@ -70,12 +73,17 @@ class ReferenceReplacer
     public function &getPropertyByReference(object $object, string $property): mixed
     {
         $getter = function &() use ($property): mixed {
+            if (!isset($this->{$property})) {
+                throw new LogicException(sprintf("No property %s found at %s.", $property, $this::class));
+            }
+
             return $this->{$property};
         };
 
         /** @var callable $bound */
         $bound = Closure::bind($getter, $object, $object);
 
+        /** @psalm-suppress NonVariableReferenceReturn */
         return $bound();
     }
 }

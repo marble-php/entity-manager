@@ -10,6 +10,9 @@ use Traversable;
 
 /**
  * @codeCoverageIgnore
+ * @template-implements ArrayAccess<string, mixed>
+ * @template-implements IteratorAggregate<string, mixed>
+ * @api
  */
 class Criteria implements ArrayAccess, IteratorAggregate
 {
@@ -45,6 +48,7 @@ class Criteria implements ArrayAccess, IteratorAggregate
         $this->sortDirection = $sortDirection;
     }
 
+    #[\Override]
     public function offsetExists(mixed $offset): bool
     {
         $offset = $this->parseOffset($offset);
@@ -52,6 +56,7 @@ class Criteria implements ArrayAccess, IteratorAggregate
         return isset($this->criteria[$offset]);
     }
 
+    #[\Override]
     public function offsetGet(mixed $offset): mixed
     {
         $offset = $this->parseOffset($offset);
@@ -60,6 +65,7 @@ class Criteria implements ArrayAccess, IteratorAggregate
         return $this->criteria[$offset];
     }
 
+    #[\Override]
     public function offsetSet(mixed $offset, mixed $value): void
     {
         $offset = $this->parseOffset($offset);
@@ -67,6 +73,7 @@ class Criteria implements ArrayAccess, IteratorAggregate
         $this->criteria[$offset] = $value;
     }
 
+    #[\Override]
     public function offsetUnset(mixed $offset): void
     {
         $offset = $this->parseOffset($offset);
@@ -83,6 +90,7 @@ class Criteria implements ArrayAccess, IteratorAggregate
         return $offset;
     }
 
+    #[\Override]
     public function getIterator(): Traversable
     {
         return new ArrayIterator($this->criteria);
