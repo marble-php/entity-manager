@@ -25,13 +25,15 @@
         "symfony/var-exporter": "^7.3|^8.0"
     },
     "require-dev": {
+        "dg/bypass-finals": "^1.9",
         "mockery/mockery": "^1.4",
         "phpunit/phpunit": "^10",
+        "psr/container": "^2.0",
         "symfony/uid": "^6.2",
-        "vimeo/psalm": "^5.0|^6.0|^7.0",
-        "dg/bypass-finals": "^1.9"
+        "vimeo/psalm": "^5.0|^6.0|^7.0"
     },
     "suggest": {
+        "psr/container": "If you want to make the repository factory take custom repositories from the container instead of instantiating them directly.",
         "symfony/uid": "If you want to use the provided UUID and ULID implementation of the Identifier interface."
     },
     "autoload": {

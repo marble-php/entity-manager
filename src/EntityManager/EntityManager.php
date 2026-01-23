@@ -11,12 +11,13 @@ use Marble\EntityManager\Read\ReadContext;
 use Marble\EntityManager\Repository\Repository;
 use Marble\EntityManager\Repository\RepositoryFactory;
 use Marble\EntityManager\UnitOfWork\UnitOfWork;
+use Psr\Container\ContainerInterface;
 use Psr\EventDispatcher\EventDispatcherInterface;
 
 /**
  * @api
  */
-class EntityManager implements ReadContext
+final class EntityManager implements ReadContext
 {
     private readonly UnitOfWork $unitOfWork;
     private readonly RepositoryFactory $repositoryFactory;
@@ -24,10 +25,11 @@ class EntityManager implements ReadContext
     public function __construct(
         EntityIoProvider                  $ioProvider,
         ?EventDispatcherInterface         $dispatcher = null,
+        ?ContainerInterface               $container = null,
         private readonly QueryResultCache $queryResultCache = new QueryResultCache(),
     ) {
         $this->unitOfWork        = new UnitOfWork($ioProvider, $dispatcher);
-        $this->repositoryFactory = new RepositoryFactory($ioProvider);
+        $this->repositoryFactory = new RepositoryFactory($ioProvider, $container);
     }
 
     public function getUnitOfWork(): UnitOfWork

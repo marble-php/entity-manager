@@ -64,6 +64,13 @@ entities are instantiated, registered in the unit of work, added to the identity
 fetch associated entities through them. Any associated sub-entity is replaced with its equivalent 
 in the identity map, if it exists there already. So even with nested associations, only one instance 
 of a particular entity will exist at any time.
+- You may use a custom repository for a particular entity class by having
+`EntityIoProvider::getCustomRepositoryClass` return the custom repository class name. It must
+extend `DefaultRepository`, and it must use the `fetchOne` and `fetchMany` methods of its parent.
+The `EntityReader` should still handle all actual read operations (e.g. database interaction);
+custom repositories allow you to hide query construction details from domain code. Custom repositories
+may also simplify dependency injection, e.g. injecting into a service only the specific repositories it
+requires, instead of the entity manager.
 - __IMPORTANT:__ One major limitation of this library compared to ORM libraries, is that all `fetch*` 
 calls to the repository are forwarded to your entity reader. This means queries only operate directly 
 on the persistence layer, and will ignore in-memory, pre-flush changes and additions in the unit of work.
