@@ -25,11 +25,10 @@ final class EntityManager implements ReadContext
     public function __construct(
         EntityIoProvider                  $ioProvider,
         ?EventDispatcherInterface         $dispatcher = null,
-        ?ContainerInterface               $container = null,
         private readonly QueryResultCache $queryResultCache = new QueryResultCache(),
     ) {
         $this->unitOfWork        = new UnitOfWork($ioProvider, $dispatcher);
-        $this->repositoryFactory = new RepositoryFactory($ioProvider, $container);
+        $this->repositoryFactory = new RepositoryFactory($ioProvider);
     }
 
     public function getUnitOfWork(): UnitOfWork

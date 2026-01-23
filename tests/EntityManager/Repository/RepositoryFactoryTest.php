@@ -12,7 +12,6 @@ use Marble\EntityManager\Read\DataCollector;
 use Marble\EntityManager\Read\ReadContext;
 use Marble\EntityManager\Read\ResultRow;
 use Marble\EntityManager\Repository\DefaultRepository;
-use Marble\EntityManager\Repository\Repository;
 use Marble\EntityManager\Repository\RepositoryFactory;
 use Marble\EntityManager\UnitOfWork\UnitOfWork;
 use Marble\Exception\LogicException;
@@ -43,6 +42,7 @@ class RepositoryFactoryTest extends MockeryTestCase
         $entityManager = Mockery::mock(EntityManager::class);
         $factory       = new RepositoryFactory($ioProvider);
 
+        $ioProvider->allows('getCustomRepository')->with(AnotherTestEntity::class)->once()->andReturnNull();
         $ioProvider->allows('getReader')->with(AnotherTestEntity::class)->once()->andReturnNull();
 
         $this->expectException(LogicException::class);
@@ -57,7 +57,7 @@ class RepositoryFactoryTest extends MockeryTestCase
         $reader1       = Mockery::mock(EntityReader::class);
 
         $ioProvider->allows('getReader')->with(AnotherTestEntity::class)->once()->andReturn($reader1);
-        $ioProvider->allows('getCustomRepositoryClass')->with(AnotherTestEntity::class)->once()->andReturnNull();
+        $ioProvider->allows('getCustomRepository')->with(AnotherTestEntity::class)->once()->andReturnNull();
         $reader1->allows('getEntityClassName')->atLeast()->once()->andReturn(AnotherTestEntity::class);
 
         $repo1 = $factory->getRepository($entityManager, AnotherTestEntity::class);
@@ -82,7 +82,7 @@ class RepositoryFactoryTest extends MockeryTestCase
         };
 
         $ioProvider->allows('getReader')->with(BasicTestEntity::class)->once()->andReturn($reader2);
-        $ioProvider->allows('getCustomRepositoryClass')->with(BasicTestEntity::class)->once()->andReturnNull();
+        $ioProvider->allows('getCustomRepository')->with(BasicTestEntity::class)->once()->andReturnNull();
 
         $repo2 = $factory->getRepository($entityManager, BasicTestEntity::class);
 
@@ -104,7 +104,7 @@ class RepositoryFactoryTest extends MockeryTestCase
         $factory       = new RepositoryFactory($ioProvider);
 
         $ioProvider->allows('getReader')->once()->andReturn($reader1 = Mockery::mock(EntityReader::class));
-        $ioProvider->allows('getCustomRepositoryClass')->with(AbstractTestEntity::class)->once()->andReturnNull();
+        $ioProvider->allows('getCustomRepository')->with(AbstractTestEntity::class)->once()->andReturnNull();
         $reader1->allows('getEntityClassName')->atLeast()->once()->andReturn(AbstractTestEntity::class);
 
         $repo = $factory->getRepository($entityManager, AbstractTestEntity::class);
@@ -124,7 +124,7 @@ class RepositoryFactoryTest extends MockeryTestCase
         $this->assertSame($t1, $t2);
     }
 
-    public function testCustomRepository(): void
+    public function testCustomRepositoryAsClassName(): void
     {
         $ioProvider    = Mockery::mock(EntityIoProvider::class);
         $entityManager = Mockery::mock(EntityManager::class);
@@ -133,7 +133,7 @@ class RepositoryFactoryTest extends MockeryTestCase
 
         $entityManager->allows('getQueryResultCache')->andReturn($cache = Mockery::mock(QueryResultCache::class));
         $entityManager->allows('getUnitOfWork')->andReturn($unitOfWork);
-        $ioProvider->allows('getCustomRepositoryClass')->with(AnotherTestEntity::class)->once()->andReturn(CustomTestRepository::class);
+        $ioProvider->allows('getCustomRepository')->with(AnotherTestEntity::class)->once()->andReturn(CustomTestRepository::class);
         $ioProvider->allows('getReader')->with(AnotherTestEntity::class)->once()->andReturn($reader1 = Mockery::mock(EntityReader::class));
         $reader1->allows('getEntityClassName')->atLeast()->once()->andReturn(AnotherTestEntity::class);
         $reader1->allows('read')->once()->with(Criteria::class, $this->collect(
@@ -150,5 +150,18 @@ class RepositoryFactoryTest extends MockeryTestCase
         $t2 = $repo->fetchOneByTitle("test");
         $this->assertSame($t1, $t2);
         $this->assertNull($t1->getTitle());
+    }
+
+    public function testCustomRepositoryAsInstance(): void
+    {
+        $ioProvider    = Mockery::mock(EntityIoProvider::class);
+        $entityManager = Mockery::mock(EntityManager::class);
+        $factory       = new RepositoryFactory($ioProvider);
+
+        $ioProvider->allows('getCustomRepository')->with(AnotherTestEntity::class)->once()->andReturn($repo = Mockery::mock(CustomTestRepository::class));
+        $repo->allows('getEntityClassName')->atLeast()->once()->andReturn(AnotherTestEntity::class);
+
+        $repo2 = $factory->getRepository($entityManager, AnotherTestEntity::class);
+        $this->assertSame($repo, $repo2);
     }
 }

@@ -7,8 +7,6 @@ use Marble\EntityManager\Contract\EntityIoProvider;
 use Marble\EntityManager\Contract\EntityReader;
 use Marble\EntityManager\EntityManager;
 use Marble\Exception\LogicException;
-use Psr\Container\ContainerExceptionInterface;
-use Psr\Container\ContainerInterface;
 use ReflectionClass;
 use ReflectionException;
 
@@ -20,8 +18,7 @@ final class RepositoryFactory
     private array $repositories = [];
 
     public function __construct(
-        private readonly EntityIoProvider    $ioProvider,
-        private readonly ?ContainerInterface $container = null,
+        private readonly EntityIoProvider $ioProvider,
     ) {
     }
 
@@ -52,18 +49,26 @@ final class RepositoryFactory
     /**
      * @template T of Entity
      * @param EntityManager   $entityManager
-     * @param class-string<T> $className
+     * @param class-string<T> $entityClassName
      * @return Repository<T>
      */
-    private function createRepository(EntityManager $entityManager, string $className): Repository
+    private function createRepository(EntityManager $entityManager, string $entityClassName): Repository
     {
-        $reader = $this->ioProvider->getReader($className);
+        $repository = $this->ioProvider->getCustomRepository($entityClassName);
+
+        if ($repository instanceof DefaultRepository) {
+            $this->validateRepositoryEntity($repository, $entityClassName);
+
+            return $repository;
+        }
+
+        $reader = $this->ioProvider->getReader($entityClassName);
 
         if ($reader === null) {
-            $errorMessage = sprintf("No reader returned by %s for %s.", $this->ioProvider::class, $className);
+            $errorMessage = sprintf("No reader returned by %s for %s.", $this->ioProvider::class, $entityClassName);
 
             try {
-                if ((new ReflectionClass($className))->isAbstract()) {
+                if ((new ReflectionClass($entityClassName))->isAbstract()) {
                     $errorMessage .= " Abstract entity classes require an entity reader just like concrete entity classes."
                         . " Specify the appropriate concrete child class when putting the entity data into the data collector.";
                 }
@@ -74,17 +79,10 @@ final class RepositoryFactory
             throw new LogicException($errorMessage);
         }
 
-        if ($customRepositoryClass = $this->ioProvider->getCustomRepositoryClass($className)) {
-            // Not validating the repository class here, because it may be an arbitrary container key.
-            $repository = $this->createCustomRepository($customRepositoryClass, $reader, $entityManager);
+        if ($repository !== null) {
+            $repository = $this->instantiateCustomRepository($repository, $reader, $entityManager);
 
-            if (!is_subclass_of($repository, DefaultRepository::class)) {
-                throw new LogicException(sprintf("Custom repository %s for entity %s does not extend %s.",
-                    $repository::class, $className, DefaultRepository::class));
-            }  elseif ($repository->getEntityClassName() !== $reader->getEntityClassName()) {
-                throw new LogicException(sprintf("Custom repository %s is not for entity %s but for %s.",
-                    $repository::class, $reader->getEntityClassName(), $repository->getEntityClassName()));
-            }
+            $this->validateRepositoryEntity($repository, $entityClassName);
 
             return $repository;
         }
@@ -94,37 +92,38 @@ final class RepositoryFactory
 
     /**
      * @template T of Entity
-     * @param class-string<Repository<T>> $repositoryClassName
-     * @param EntityReader                $entityReader
-     * @param EntityManager               $entityManager
-     * @return Repository<T>
+     * @param class-string<DefaultRepository<T>> $repositoryClassName
+     * @param EntityReader                       $entityReader
+     * @param EntityManager                      $entityManager
+     * @return DefaultRepository<T>
      */
-    private function createCustomRepository(string $repositoryClassName, EntityReader $entityReader, EntityManager $entityManager): Repository
+    private function instantiateCustomRepository(string $repositoryClassName, EntityReader $entityReader, EntityManager $entityManager): DefaultRepository
     {
-        if ($this->container?->has($repositoryClassName)) {
-            try {
-                /** @psalm-suppress MixedAssignment */
-                $repository = $this->container->get($repositoryClassName);
-
-                if (!$repository instanceof Repository) {
-                    throw new LogicException(sprintf("Class %s does not implement %s.", get_debug_type($repository), Repository::class));
-                }
-
-                /** @var Repository<T> $repository */
-                return $repository;
-            } catch (ContainerExceptionInterface $e) {
-                throw new LogicException($e->getMessage(), 0, $e);
-            }
-        }
-
-        if (!is_subclass_of($repositoryClassName, DefaultRepository::class)) {
+        if (!class_exists($repositoryClassName)) {
+            throw new LogicException(sprintf("Custom repository class %s for entity %s does not exist.",
+                $repositoryClassName, $entityReader->getEntityClassName()));
+        } elseif (!is_subclass_of($repositoryClassName, DefaultRepository::class)) {
             throw new LogicException(sprintf("Custom repository class %s for entity %s does not extend %s.",
                 $repositoryClassName, $entityReader->getEntityClassName(), DefaultRepository::class));
         }
 
         // Like Doctrine ORM, we'll assume that constructor parameters are unchanged.
-        // If your custom repository does need additional dependencies, use the container.
+        // If your custom repository does need additional constructor-injected dependencies, return an instance from the EntityIoProvider.
 
-        return new $repositoryClassName($entityReader, $entityManager);
+        /**
+         * @psalm-suppress UnsafeInstantiation
+         * @var DefaultRepository<T> $repository
+         */
+        $repository = new $repositoryClassName($entityReader, $entityManager);
+
+        return $repository;
+    }
+
+    private function validateRepositoryEntity(DefaultRepository $repository, string $entityClassName): void
+    {
+        if ($repository->getEntityClassName() !== $entityClassName) {
+            throw new LogicException(sprintf("Custom repository %s is not for entity %s but for %s.",
+                $repository::class, $entityClassName, $repository->getEntityClassName()));
+        }
     }
 }

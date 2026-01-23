@@ -2,6 +2,7 @@
 namespace Marble\EntityManager\Contract;
 
 use Marble\Entity\Entity;
+use Marble\EntityManager\Repository\DefaultRepository;
 use Marble\EntityManager\Repository\Repository;
 
 interface EntityIoProvider
@@ -23,7 +24,7 @@ interface EntityIoProvider
     /**
      * @template T of Entity
      * @param class-string<T> $className
-     * @return class-string<Repository<T>>|null
+     * @return DefaultRepository<T>|class-string<DefaultRepository<T>>|null
      */
-    public function getCustomRepositoryClass(string $className): ?string;
+    public function getCustomRepository(string $className): DefaultRepository|string|null;
 }
