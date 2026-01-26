@@ -1,4 +1,5 @@
 <?php
+
 namespace Marble\Entity;
 
 use Marble\Exception\LogicException;
@@ -13,7 +14,7 @@ class EntityReference
      * @param class-string<T> $className
      */
     public function __construct(
-        private readonly string $className,
+        private readonly string     $className,
         private readonly Identifier $identifier,
     ) {
         if (!class_exists($className)) {

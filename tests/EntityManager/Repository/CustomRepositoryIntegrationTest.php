@@ -1,7 +1,8 @@
 <?php
 
-namespace Marble\Tests\EntityManager\Integration;
+namespace Marble\Tests\EntityManager\Repository;
 
+use Marble\Entity\EntityReference;
 use Marble\Entity\SimpleId;
 use Marble\EntityManager\Contract\EntityIoProvider;
 use Marble\EntityManager\Contract\EntityReader;
@@ -13,7 +14,7 @@ use Marble\Tests\EntityManager\TestImpl\Repository\CustomTestRepository;
 use Mockery;
 use Mockery\Adapter\Phpunit\MockeryTestCase;
 
-class CustomRepositoryTest extends MockeryTestCase
+class CustomRepositoryIntegrationTest extends MockeryTestCase
 {
     public function testDefaultAndCustomRepositoriesCanCoexist(): void
     {
@@ -26,8 +27,9 @@ class CustomRepositoryTest extends MockeryTestCase
         $ioProvider->shouldReceive('getCustomRepository')->with(AnotherTestEntity::class)->once()->andReturn(CustomTestRepository::class);
 
         $reader->shouldReceive('getEntityClassName')->andReturn(AnotherTestEntity::class);
-        // TODO: fix query cache
-        $reader->shouldReceive('read')->twice()->withArgs(function ($query, $resultSetBuilder, $em) use ($entityManager): bool {
+
+        // Reader should only read once, second fetch should take from query cache.
+        $reader->shouldReceive('read')->once()->withArgs(function ($query, $resultSetBuilder, $em) use ($entityManager): bool {
             if (
                 $em !== $entityManager or
                 !$resultSetBuilder instanceof DataCollector or
@@ -47,5 +49,11 @@ class CustomRepositoryTest extends MockeryTestCase
         $t2 = $entityManager->getRepository(AnotherTestEntity::class, false)->fetchOneBy(['title' => 'test']);
 
         $this->assertSame($t1, $t2);
+
+        $t3 = new AnotherTestEntity();
+        $entityManager->getRepository(AnotherTestEntity::class)->add($t3);
+        $t4 = $entityManager->getRepository(AnotherTestEntity::class, false)->fetchOne($t3->getId());
+
+        $this->assertSame($t3, $t4);
     }
 }

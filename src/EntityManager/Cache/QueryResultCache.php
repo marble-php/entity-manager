@@ -4,7 +4,6 @@ namespace Marble\EntityManager\Cache;
 
 use Marble\Entity\Entity;
 use Marble\EntityManager\Repository\Repository;
-use SebastianBergmann\Exporter\Exporter;
 
 /**
  * @template T of Entity
@@ -20,18 +19,11 @@ class QueryResultCache
      */
     private array $cache = [];
 
-    private Exporter $exporter;
-
-    public function __construct()
-    {
-        $this->exporter = new Exporter();
-    }
-
     /**
      * @param Repository<T> $repository
-     * @param object|null $query
-     * @param bool $one
-     * @param list<T> $entities
+     * @param object|null   $query
+     * @param bool          $one
+     * @param list<T>       $entities
      */
     public function save(Repository $repository, ?object $query, bool $one, Entity ...$entities): void
     {
@@ -40,8 +32,8 @@ class QueryResultCache
 
     /**
      * @param Repository<T> $repository
-     * @param object|null $query
-     * @param bool $one
+     * @param object|null   $query
+     * @param bool          $one
      * @return list<T>|null
      */
     public function get(Repository $repository, ?object $query, bool $one): ?array
@@ -53,9 +45,27 @@ class QueryResultCache
 
     private function makeCacheKey(?object $query, bool $one): string
     {
-        $export = $this->exporter->export($query, 2);
+        if ($query === null) {
+            return 'null|' . ($one ? '1' : 'm');
+        }
 
-        return md5($export) . (string) $one;
+        $array      = $this->toArrayRecursive($query);
+        $serialized = serialize($array);
+
+        return get_class($query) . '|' . md5($serialized) . '|' . ($one ? '1' : 'm');
+    }
+
+    private function toArrayRecursive(object $object): array
+    {
+        $array = (array) $object;
+
+        foreach ($array as $key => $value) {
+            if (is_object($value)) {
+                $array[$key] = $this->toArrayRecursive($value);
+            }
+        }
+
+        return $array;
     }
 
     public function clear(): void
