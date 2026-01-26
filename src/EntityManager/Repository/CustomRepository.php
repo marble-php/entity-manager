@@ -63,30 +63,47 @@ abstract class CustomRepository implements Repository
         $this->repository()->remove($entity);
     }
 
+    /**
+     * @return T|null
+     */
     #[\Override]
     public function fetchOne(object $query)
     {
         return $this->repository()->fetchOne($query);
     }
 
+    /**
+     * @param array<string, scalar> $criteria
+     * @return T|null
+     */
     #[\Override]
     public function fetchOneBy(array $criteria)
     {
         return $this->repository()->fetchOneBy($criteria);
     }
 
+    /**
+     * @return list<T>
+     */
     #[\Override]
     public function fetchMany(?object $query): array
     {
         return $this->repository()->fetchMany($query);
     }
 
+    /**
+     * @param array<string, scalar> $criteria
+     * @return list<T>
+     */
     #[\Override]
     public function fetchManyBy(array $criteria): array
     {
         return $this->repository()->fetchManyBy($criteria);
     }
 
+    /**
+     * @return list<T>
+     */
     #[\Override]
     public function fetchAll(): array
     {

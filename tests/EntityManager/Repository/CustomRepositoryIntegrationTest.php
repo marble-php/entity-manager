@@ -50,10 +50,18 @@ class CustomRepositoryIntegrationTest extends MockeryTestCase
 
         $this->assertSame($t1, $t2);
 
-        $t3 = new AnotherTestEntity();
-        $entityManager->getRepository(AnotherTestEntity::class)->add($t3);
-        $t4 = $entityManager->getRepository(AnotherTestEntity::class, false)->fetchOne($t3->getId());
+        // Even if custom repository is instantiated differently (e.g. by container),
+        // the underlying default repository is one and the same.
 
-        $this->assertSame($t3, $t4);
+        $customRepo = new CustomTestRepository($entityManager, AnotherTestEntity::class);
+        $t3         = $customRepo->fetchOneByTitle('test'); // taken from identity map
+
+        $this->assertSame($t1, $t3);
+
+        $t4 = new AnotherTestEntity();
+        $entityManager->getRepository(AnotherTestEntity::class)->add($t4);
+        $t5 = $entityManager->getRepository(AnotherTestEntity::class, false)->fetchOne($t4->getId());
+
+        $this->assertSame($t4, $t5);
     }
 }

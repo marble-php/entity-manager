@@ -81,6 +81,9 @@ final class DefaultRepository implements Repository
         return $this->entityManager->getQueryResultCache();
     }
 
+    /**
+     * @return T|null
+     */
     #[\Override]
     public function fetchOne(object $query)
     {
@@ -122,12 +125,19 @@ final class DefaultRepository implements Repository
         return $entity;
     }
 
+    /**
+     * @param array<string, scalar> $criteria
+     * @return T|null
+     */
     #[\Override]
     public function fetchOneBy(array $criteria)
     {
         return $this->fetchOne(new Criteria($criteria));
     }
 
+    /**
+     * @return list<T>
+     */
     #[\Override]
     public function fetchMany(?object $query): array
     {
@@ -157,6 +167,25 @@ final class DefaultRepository implements Repository
     }
 
     /**
+     * @param array<string, scalar> $criteria
+     * @return list<T>
+     */
+    #[\Override]
+    public function fetchManyBy(array $criteria): array
+    {
+        return $this->fetchMany(new Criteria($criteria));
+    }
+
+    /**
+     * @return list<T>
+     */
+    #[\Override]
+    public function fetchAll(): array
+    {
+        return $this->fetchMany(null);
+    }
+
+    /**
      * @return T
      */
     private function makeEntity(ResultRow $row): Entity
@@ -168,17 +197,5 @@ final class DefaultRepository implements Repository
 
         return $this->getUnitOfWork()->getEntityFromIdentityMap($this->getEntityClassName(), $row->identifier)
             ?? $this->getUnitOfWork()->instantiate($row->childClass ?? $this->getEntityClassName(), $row->identifier, $row->data);
-    }
-
-    #[\Override]
-    public function fetchManyBy(array $criteria): array
-    {
-        return $this->fetchMany(new Criteria($criteria));
-    }
-
-    #[\Override]
-    public function fetchAll(): array
-    {
-        return $this->fetchMany(null);
     }
 }

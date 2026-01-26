@@ -41,12 +41,23 @@ final class EntityManager implements ReadContext
         return $this->queryResultCache;
     }
 
+    /**
+     * @template T of Entity
+     * @param class-string<T> $className
+     * @return Repository<T>
+     */
     #[\Override]
     public function getRepository(string $className, bool $allowCustom = true): Repository
     {
         return $this->repositoryFactory->getRepository($this, $className, $allowCustom);
     }
 
+    /**
+     * @template T of Entity
+     * @param EntityReference<T> $reference
+     * @return T
+     * @throws EntityNotFoundException
+     */
     #[\Override]
     public function fetch(EntityReference $reference): Entity
     {

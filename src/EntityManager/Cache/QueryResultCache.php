@@ -59,6 +59,7 @@ class QueryResultCache
     {
         $array = (array) $object;
 
+        /** @psalm-suppress MixedAssignment */
         foreach ($array as $key => $value) {
             if (is_object($value)) {
                 $array[$key] = $this->toArrayRecursive($value);
