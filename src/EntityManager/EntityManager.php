@@ -42,9 +42,9 @@ final class EntityManager implements ReadContext
     }
 
     #[\Override]
-    public function getRepository(string $className): Repository
+    public function getRepository(string $className, bool $allowCustom = true): Repository
     {
-        return $this->repositoryFactory->getRepository($this, $className);
+        return $this->repositoryFactory->getRepository($this, $className, $allowCustom);
     }
 
     #[\Override]

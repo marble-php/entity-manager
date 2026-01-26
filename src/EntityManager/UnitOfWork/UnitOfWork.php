@@ -91,7 +91,7 @@ final class UnitOfWork implements WriteContext
             $entity = Instantiator::instantiate($className);
 
             $this->needle->hydrate($entity, $data);
-        } catch (ExceptionInterface|ReflectionException $exception) {
+        } catch (ExceptionInterface $exception) {
             throw new LogicException($exception->getMessage(), 0, $exception);
         }
 

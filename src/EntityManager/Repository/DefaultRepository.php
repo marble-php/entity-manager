@@ -17,7 +17,7 @@ use Marble\Exception\LogicException;
  * @implements Repository<T>
  * @api
  */
-class DefaultRepository implements Repository
+final class DefaultRepository implements Repository
 {
     /**
      * @param EntityReader<T> $reader
@@ -42,13 +42,13 @@ class DefaultRepository implements Repository
      * @return class-string<T>
      */
     #[\Override]
-    final public function getEntityClassName(): string
+    public function getEntityClassName(): string
     {
         return $this->reader->getEntityClassName();
     }
 
     #[\Override]
-    final public function add(Entity $entity): void
+    public function add(Entity $entity): void
     {
         $className = $this->getEntityClassName();
 
@@ -60,7 +60,7 @@ class DefaultRepository implements Repository
     }
 
     #[\Override]
-    final public function remove(Entity $entity): void
+    public function remove(Entity $entity): void
     {
         $className = $this->getEntityClassName();
 
@@ -82,7 +82,7 @@ class DefaultRepository implements Repository
     }
 
     #[\Override]
-    final public function fetchOne(object $query)
+    public function fetchOne(object $query)
     {
         if ($query instanceof Identifier) {
             if ($entity = $this->getUnitOfWork()->getEntityFromIdentityMap($this->getEntityClassName(), $query)) {
@@ -123,13 +123,13 @@ class DefaultRepository implements Repository
     }
 
     #[\Override]
-    final public function fetchOneBy(array $criteria)
+    public function fetchOneBy(array $criteria)
     {
         return $this->fetchOne(new Criteria($criteria));
     }
 
     #[\Override]
-    final public function fetchMany(?object $query): array
+    public function fetchMany(?object $query): array
     {
         if ($query instanceof Identifier) {
             throw new LogicException(sprintf("Query argument to %s must not be an identifier.", __METHOD__));
@@ -171,13 +171,13 @@ class DefaultRepository implements Repository
     }
 
     #[\Override]
-    final public function fetchManyBy(array $criteria): array
+    public function fetchManyBy(array $criteria): array
     {
         return $this->fetchMany(new Criteria($criteria));
     }
 
     #[\Override]
-    final public function fetchAll(): array
+    public function fetchAll(): array
     {
         return $this->fetchMany(null);
     }

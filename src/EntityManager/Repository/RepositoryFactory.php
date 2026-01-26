@@ -26,42 +26,71 @@ final class RepositoryFactory
      * @template T of Entity
      * @param EntityManager   $entityManager
      * @param class-string<T> $className
+     * @param bool            $allowCustom If false, will only return default repository
      * @return Repository<T>
      */
-    public function getRepository(EntityManager $entityManager, string $className): Repository
+    public function getRepository(EntityManager $entityManager, string $className, bool $allowCustom = true): Repository
     {
-        $key = $className . spl_object_id($entityManager);
+        $key       = $className . '|' . spl_object_id($entityManager);
+        $customKey = $key . '|custom';
 
-        if (array_key_exists($key, $this->repositories)) {
+        if ($allowCustom && array_key_exists($customKey, $this->repositories)) {
+            $repository = $this->repositories[$customKey];
+        } elseif (!$allowCustom && array_key_exists($key, $this->repositories)) {
             $repository = $this->repositories[$key];
         } elseif (!class_exists($className)) {
             throw new LogicException(sprintf("Class %s does not exist.", $className));
         } elseif (!is_subclass_of($className, Entity::class)) {
             throw new LogicException(sprintf("Class %s does not implement the %s interface.", $className, Entity::class));
         } else {
-            $repository = $this->createRepository($entityManager, $className);
+            $repository = $this->createRepository($entityManager, $className, $allowCustom);
+
+            if ($repository instanceof DefaultRepository) {
+                $this->repositories[$key] = $repository;
+            }
+
+            if ($allowCustom) {
+                $this->repositories[$customKey] = $repository;
+            }
         }
 
         /** @var Repository<T> $repository */
-        return $this->repositories[$key] = $repository;
+        return $repository;
     }
 
     /**
      * @template T of Entity
      * @param EntityManager   $entityManager
      * @param class-string<T> $entityClassName
+     * @param bool            $allowCustom
      * @return Repository<T>
      */
-    private function createRepository(EntityManager $entityManager, string $entityClassName): Repository
+    private function createRepository(EntityManager $entityManager, string $entityClassName, bool $allowCustom = true): Repository
     {
-        $repository = $this->ioProvider->getCustomRepository($entityClassName);
+        if ($allowCustom) {
+            $repository = $this->ioProvider->getCustomRepository($entityClassName);
 
-        if ($repository instanceof DefaultRepository) {
-            $this->validateRepositoryEntity($repository, $entityClassName);
+            if ($repository !== null) {
+                if (!$repository instanceof CustomRepository) {
+                    $repository = $this->instantiateCustomRepository($repository, $entityClassName, $entityManager);
+                }
 
-            return $repository;
+                $this->validateRepositoryEntity($repository, $entityClassName);
+
+                return $repository;
+            }
         }
 
+        return new DefaultRepository($this->getEntityReader($entityClassName), $entityManager);
+    }
+
+    /**
+     * @template T of Entity
+     * @param class-string<T> $entityClassName
+     * @return EntityReader<T>
+     */
+    private function getEntityReader(string $entityClassName): EntityReader
+    {
         $reader = $this->ioProvider->getReader($entityClassName);
 
         if ($reader === null) {
@@ -79,47 +108,44 @@ final class RepositoryFactory
             throw new LogicException($errorMessage);
         }
 
-        if ($repository !== null) {
-            $repository = $this->instantiateCustomRepository($repository, $reader, $entityManager);
-
-            $this->validateRepositoryEntity($repository, $entityClassName);
-
-            return $repository;
-        }
-
-        return new DefaultRepository($reader, $entityManager);
+        return $reader;
     }
 
     /**
      * @template T of Entity
-     * @param class-string<DefaultRepository<T>> $repositoryClassName
-     * @param EntityReader                       $entityReader
-     * @param EntityManager                      $entityManager
-     * @return DefaultRepository<T>
+     * @param class-string<CustomRepository<T>> $repositoryClassName
+     * @param class-string<T>                   $entityClassName
+     * @param EntityManager                     $entityManager
+     * @return CustomRepository<T>
      */
-    private function instantiateCustomRepository(string $repositoryClassName, EntityReader $entityReader, EntityManager $entityManager): DefaultRepository
-    {
+    private function instantiateCustomRepository(
+        string        $repositoryClassName,
+        string  $entityClassName,
+        EntityManager $entityManager,
+    ): CustomRepository {
         if (!class_exists($repositoryClassName)) {
             throw new LogicException(sprintf("Custom repository class %s for entity %s does not exist.",
-                $repositoryClassName, $entityReader->getEntityClassName()));
-        } elseif (!is_subclass_of($repositoryClassName, DefaultRepository::class)) {
+                $repositoryClassName, $entityClassName));
+        } elseif (!is_subclass_of($repositoryClassName, CustomRepository::class)) {
             throw new LogicException(sprintf("Custom repository class %s for entity %s does not extend %s.",
-                $repositoryClassName, $entityReader->getEntityClassName(), DefaultRepository::class));
+                $repositoryClassName, $entityClassName, CustomRepository::class));
         }
 
         // Like Doctrine ORM, we'll assume that constructor parameters are unchanged.
-        // If your custom repository does need additional constructor-injected dependencies, return an instance from the EntityIoProvider.
+        // We cannot mark the constructor final because we want to allow extension.
+        // If your custom repository does need additional constructor-injected dependencies,
+        // return an instance from the EntityIoProvider.
 
         /**
          * @psalm-suppress UnsafeInstantiation
-         * @var DefaultRepository<T> $repository
+         * @var CustomRepository<T> $repository
          */
-        $repository = new $repositoryClassName($entityReader, $entityManager);
+        $repository = new $repositoryClassName($entityManager, $entityClassName);
 
         return $repository;
     }
 
-    private function validateRepositoryEntity(DefaultRepository $repository, string $entityClassName): void
+    private function validateRepositoryEntity(Repository $repository, string $entityClassName): void
     {
         if ($repository->getEntityClassName() !== $entityClassName) {
             throw new LogicException(sprintf("Custom repository %s is not for entity %s but for %s.",

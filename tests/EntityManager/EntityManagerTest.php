@@ -34,7 +34,7 @@ class EntityManagerTest extends MockeryTestCase
         $ref1              = EntityReference::create($t1);
 
         $repositoryFactory->shouldReceive('getRepository')->twice()
-            ->with(Mockery::type(EntityManager::class), $ref1->getClassName())->andReturn($repo);
+            ->with(Mockery::type(EntityManager::class), $ref1->getClassName(), true)->andReturn($repo);
 
         $repo->shouldReceive('fetchOne')->with($ref1->getId())->once()->andReturn($t1);
 
