@@ -11,12 +11,12 @@ persistence layer you’re using.
 
 Use Composer to install: `composer require marble/entity-manager`
 
-This library requires PHP 8.1.
+This library requires PHP 8.2.
 
 ### How to use
 
 1. All your entity classes should implement the `Entity` interface. For identifiers you may use the 
-provided `SimpleId` or `Ulid` classes, or any other implementation of the `Identifier` interface.
+provided `SimpleId` or Uid classes, or any other implementation of the `Identifier` interface.
 2. Create a class that implements `EntityReader` for every entity class that you want to fetch
 from your application code or from other readers. See [Fetching](#fetching) for more details.
 3. For every entity class, create a class that implements `EntityWriter`, unless such entities are
@@ -33,7 +33,7 @@ detected. To actually write data changes to your persistence layer, call `Entity
 until then all changes are in memory only. Note that an entity’s writer will only be called if the entity
 indeed has changes or must be removed.
 - Multiple entities in the same entity class hierarchy must never have the same identifier. It’s okay if
-  new entities don’t have an identifier yet, but once an entity is persisted it must have an identifier.
+new entities don’t have an identifier yet, but once an entity is persisted it must have an identifier.
 - A flush order is calculated by sorting known entities such that a given entity’s associations are
 all ranked higher than the entity itself. As such, when persisting an entity in `EntityWriter::write`, 
 its associated entities will have been passed to their writers already, and will have an id. This 
@@ -65,9 +65,9 @@ fetch associated entities through them. Any associated sub-entity is replaced wi
 in the identity map, if it exists there already. So even with nested associations, only one instance 
 of a particular entity will exist at any time.
 - You may use a custom repository for a particular entity class by having
-`EntityIoProvider::getCustomRepositoryClass` return the custom repository class name. It must
-extend `DefaultRepository`, and it must use the `fetchOne` and `fetchMany` methods of its parent.
-The `EntityReader` should still handle all actual read operations (e.g. database interaction);
+`EntityIoProvider::getCustomRepository` return either an instantiated custom repository, or its class name. 
+It must extend `CustomRepository`, and it should use the `fetchOne` and `fetchMany` methods of its parent.
+The `EntityReader` will still handle all actual read operations (e.g. database interaction);
 custom repositories allow you to hide query construction details from domain code. Custom repositories
 may also simplify dependency injection, e.g. injecting into a service only the specific repositories it
 requires, instead of the entity manager.
