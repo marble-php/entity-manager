@@ -1,29 +1,54 @@
-## Marble Entity Manager
+# Marble Entity Manager
 
-### Introduction
+![Minimum PHP version](https://img.shields.io/badge/php->=_8.2-8892BF)
+![Tests](https://img.shields.io/badge/tests-passing-brightgreen)
+![Installs via Packagist](https://img.shields.io/packagist/dt/marble/entity-manager)
+![Latest stable version](https://img.shields.io/packagist/v/marble/entity-manager)
+![License](https://img.shields.io/packagist/l/marble/entity-manager)
 
-This library provides some of the great features of many ORM frameworks — entity manager, unit of work,
+This library provides some of the great features of ORM frameworks — entity manager, unit of work,
 identity map, repository factory, query caching — without the object-relational mapping itself.
 It’s up to you to implement the actual reading and writing of entity data from and to whatever
 persistence layer you’re using.
 
-### Installation
+- **Unit of work:** Bundles all your database operations into a single transaction-like flush, ensuring data consistency.
+- **Identity map:** Ensures that each unique entity is instantiated only once per session, preventing conflicting object states.
+- **Automatic change tracking:** Automatically detects modifications to your entities, so you only save what has actually changed.
+- **Ordered flushes:** Intelligently calculates the correct order to persist entities based on their associations, handling dependencies for you.
+- **Persistence-agnostic:** Since you implement the readers and writers, you can use any storage engine — SQL, NoSQL, or even external APIs — while keeping your domain logic clean.
+
+## Why Marble?
+
+I love Doctrine ORM as much as the next guy, but often enough the object-relational mapping part of it is just overly constrained (1 property = 1 column) and overly constraining (Doctrine collections all over your domain code).
+Its configuration, especially if you want to get around those constraints, can get very (very) elaborate.
+
+Moreover, ORM libraries are limited to relational (i.e. SQL-based) storage engines. Add NoSQL or external APIs into the mix, and
+you'll need to bring in additional entity-managing libraries to bridge the gap.
+
+Marble gives you full control over how your data is saved and loaded, without sacrificing the benefits of a robust unit of work and identity map.
+
+## Installation
 
 Use Composer to install: `composer require marble/entity-manager`
 
 This library requires PHP 8.2.
 
-### How to use
+> Note: if you’re building a Symfony application, consider installing the 
+[bundle](https://github.com/marble-php/entity-manager-bundle) instead.
+
+## Getting started
 
 1. All your entity classes should implement the `Entity` interface. For identifiers you may use the 
 provided `SimpleId` or Uid classes, or any other implementation of the `Identifier` interface.
 2. Create a class that implements `EntityReader` for every entity class that you want to fetch
 from your application code or from other readers. See [Fetching](#fetching) for more details.
-3. For every entity class, create a class that implements `EntityWriter`, unless such entities are
-always written and deleted by other writers. See [Persisting](#persisting) and [Removing](#removing)
-for more details.
+3. Create one or more classes that implement `EntityWriter`. Typically you’ll have either a single writer 
+for all entities, or a writer per entity class except those that are always written and deleted by other writers. 
+See [Persisting](#persisting) and [Removing](#removing) for more details.
 4. Implement the `EntityIoProvider` interface and have it return the correct `EntityReader` and 
 `EntityWriter` for a given `Entity`. Of course one class may implement both interfaces.
+
+## How it works
 
 ### Persisting
 
@@ -71,10 +96,10 @@ The `EntityReader` will still handle all actual read operations (e.g. database i
 custom repositories allow you to hide query construction details from domain code. Custom repositories
 may also simplify dependency injection, e.g. injecting into a service only the specific repositories it
 requires, instead of the entity manager.
-- __IMPORTANT:__ One major limitation of this library compared to ORM libraries, is that all `fetch*` 
-calls to the repository are forwarded to your entity reader. This means queries only operate directly 
-on the persistence layer, and will ignore in-memory, pre-flush changes and additions in the unit of work.
-There is currently no extension point in the library to circumvent this limitation.
+- __IMPORTANT:__ One major limitation of this library compared to some other ORM libraries, is 
+that all `fetch*` calls to the repository are forwarded to your entity reader. This means queries only 
+operate directly on the persistence layer, and will ignore in-memory, pre-flush changes and additions in the 
+unit of work. There is currently no extension point in the library to circumvent this limitation.
 
 ### Removing
 
@@ -85,3 +110,11 @@ explicitly or via database-level cascade rules. Make sure to call `markRemoved` 
 to let the unit of work know that these were indeed removed.
 - Removed entities are removed from the identity map. Fetching the same entity again will return a new
 instance.
+
+## License
+
+Marble is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+
+## About
+
+Made by [a Dutch guy](https://github.com/mjpvandenberg) in his spare time, with some frustrations towards (as well as love for) Doctrine ORM.
