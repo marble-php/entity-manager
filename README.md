@@ -1,6 +1,6 @@
 # Marble Entity Manager
 
-![Minimum PHP version](https://img.shields.io/badge/php->=_8.2-8892BF)
+![Minimum PHP version](https://img.shields.io/badge/php-v8.2+-8892BF)
 ![Tests](https://img.shields.io/badge/tests-passing-brightgreen)
 ![Installs via Packagist](https://img.shields.io/packagist/dt/marble/entity-manager)
 ![Latest stable version](https://img.shields.io/packagist/v/marble/entity-manager)

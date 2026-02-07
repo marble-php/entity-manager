@@ -2,7 +2,6 @@
 
 namespace Marble\Tests\EntityManager\Repository;
 
-use Marble\Entity\EntityReference;
 use Marble\Entity\SimpleId;
 use Marble\EntityManager\Contract\EntityIoProvider;
 use Marble\EntityManager\Contract\EntityReader;
