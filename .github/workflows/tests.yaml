@@ -1,0 +1,63 @@
+name: "Tests and static code analysis"
+
+on:
+    pull_request:
+    push:
+        branches: [ 'main' ]
+
+permissions:
+    contents: read
+
+jobs:
+    tests:
+        name: "PHP ${{ matrix.version }}"
+        runs-on: ${{ matrix.os }}
+        continue-on-error: false
+
+        strategy:
+            matrix:
+                os: [ 'ubuntu-latest' ]
+                version: [ '8.2', '8.3', '8.4', '8.5' ]
+                include:
+                    -   os: 'macos-latest'
+                        version: '8.2'
+                    -   os: 'windows-latest'
+                        version: '8.2'
+
+        steps:
+            -   name: "Checkout code"
+                uses: actions/checkout@v6
+
+            -   name: "Install PHP"
+                uses: shivammathur/setup-php@v2
+                with:
+                    php-version: ${{ matrix.version }}
+                    coverage: none
+                    tools: composer:v2
+
+            -   name: "Install dependencies"
+                run: composer install --ansi --no-interaction --no-progress
+
+            -   name: "Run tests"
+                run: vendor/bin/phpunit tests
+
+    static-analysis:
+        name: Psalm
+        runs-on: ubuntu-latest
+
+        steps:
+            -   name: "Checkout code"
+                uses: actions/checkout@v6
+
+            -   name: "Install PHP"
+                uses: shivammathur/setup-php@v2
+                with:
+                    php-version: '8.4'
+                    coverage: none
+                    tools: composer:v2
+
+            -   name: "Install dependencies"
+                run: composer install --ansi --no-interaction --no-progress
+
+            -   name: "Run static code analysis"
+                run: vendor/bin/psalm --no-progress
