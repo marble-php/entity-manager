@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 namespace Marble\EntityManager\Contract;
 
 use Marble\Entity\Entity;
