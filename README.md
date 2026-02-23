@@ -31,10 +31,11 @@ Marble gives you full control over how your data is saved and loaded, without sa
 
 Use Composer to install: `composer require marble/entity-manager`
 
-This library requires PHP 8.2.
+This library requires PHP 8.2 or higher.
 
-> Note: if you’re building a Symfony application, consider installing the 
+> **Note:** if you’re building a Symfony application, consider installing the 
 [bundle](https://github.com/marble-php/entity-manager-bundle) instead.
+It comes with a default implementation of `EntityIoProvider` and provides several features to make your life easier.
 
 ## Getting started
 
@@ -71,6 +72,7 @@ that are always persisted by other writers.
 - Your entity writer should throw an `EntitySkippedException` when you need to leave the writing or removing
 of the entity to a parent entity’s writer later in the flush order. The library will check that all
 necessary writes and removals are done by the end of the flush.
+- The first argument to `EntityWriter::write` is an instance of `HasChanged` if the entity is not new.
 
 ### Fetching
 
@@ -96,10 +98,15 @@ The `EntityReader` will still handle all actual read operations (e.g. database i
 custom repositories allow you to hide query construction details from domain code. Custom repositories
 may also simplify dependency injection, e.g. injecting into a service only the specific repositories it
 requires, instead of the entity manager.
-- __IMPORTANT:__ One major limitation of this library compared to some other ORM libraries, is 
+
+> **Note:** One known limitation of this library compared to some other ORM libraries, is 
 that all `fetch*` calls to the repository are forwarded to your entity reader. This means queries only 
 operate directly on the persistence layer, and will ignore in-memory, pre-flush changes and additions in the 
-unit of work. There is currently no extension point in the library to circumvent this limitation.
+unit of work. There is currently no extension point in the library to circumvent this limitation. 
+> 
+> However, if you’re following Domain-Driven Design (DDD) practices, particularly the "one aggregate per 
+transaction" rule, in most cases you shouldn’t be querying the repository _after_ mutating an aggregate but 
+_before_ flushing. Nonetheless, be careful when doing batch processing or handling synchronous, pre-flush events.
 
 ### Removing
 
