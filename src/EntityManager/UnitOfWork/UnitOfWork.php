@@ -293,10 +293,9 @@ final class UnitOfWork implements WriteContext
                     }
                 }
             }
-
-            $this->dispatcher?->dispatch(new PostFlushEvent());
         } finally {
             $this->flushing = false;
+            $this->dispatcher?->dispatch(new PostFlushEvent());
         }
     }
 
