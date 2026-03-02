@@ -13,16 +13,16 @@ use Marble\Entity\Entity;
 final class EntityUpdateContainer extends EntityWriteContainer implements HasChanged
 {
     /**
-     * @param T $entity
+     * @param T                    $entity
      * @param array<string, mixed> $data
      * @param array<string, mixed> $originalData
-     * @param array<array-key, string> $changedProperties
+     * @param list<string>         $changedProperties
      */
     public function __construct(
         Entity                 $entity,
         array                  $data,
         private readonly array $originalData,
-        private readonly array $changedProperties
+        private readonly array $changedProperties,
     ) {
         parent::__construct($entity, $data);
     }
@@ -36,6 +36,6 @@ final class EntityUpdateContainer extends EntityWriteContainer implements HasCha
     #[\Override]
     public function getChangedProperties(): array
     {
-        return array_values($this->changedProperties);
+        return $this->changedProperties;
     }
 }

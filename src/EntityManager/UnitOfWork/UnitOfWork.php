@@ -11,6 +11,7 @@ use Marble\EntityManager\Event\EntityPersistedEvent;
 use Marble\EntityManager\Event\EntityRemovedEvent;
 use Marble\EntityManager\Event\FetchedEntityInstantiatedEvent;
 use Marble\EntityManager\Event\EntityRegisteredEvent;
+use Marble\EntityManager\Event\NewEntityPersistedEvent;
 use Marble\EntityManager\Event\NewEntityRegisteredEvent;
 use Marble\EntityManager\Event\PostFlushEvent;
 use Marble\EntityManager\Event\PreClearEvent;
@@ -382,9 +383,16 @@ final class UnitOfWork implements WriteContext
             throw new LogicException(sprintf("Entity %s has been removed.", LogicException::strEntity($entity)));
         }
 
-        $info->setLastSavedData($this->needle->extract($entity));
+        $new     = $info->getState() === EntityState::NEW;
+        $changes = $this->changeCalculator->findChangedProperties($info);
+
+        $info->setLastSavedData($data = $this->needle->extract($entity));
         $info->setState($info->getState()->toPersisted());
-        $this->dispatcher?->dispatch(new EntityPersistedEvent($entity));
+
+        $this->dispatcher?->dispatch($new
+            ? new NewEntityPersistedEvent($entity, $data, $changes)
+            : new EntityPersistedEvent($entity, $data, $changes)
+        );
     }
 
     #[\Override]

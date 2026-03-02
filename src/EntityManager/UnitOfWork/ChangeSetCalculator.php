@@ -11,6 +11,8 @@ use SebastianBergmann\Comparator\Factory;
 
 final class ChangeSetCalculator
 {
+    private const FLOAT_PRECISION = .000001;
+
     private Factory $comparatorFactory;
 
     public function __construct(private readonly ObjectNeedle $needle)
@@ -24,13 +26,16 @@ final class ChangeSetCalculator
      */
     public function findChangedProperties(EntityInfo $entityInfo): array
     {
-        $extracted = $this->needle->extract($entityInfo->getEntity());
+        $entity    = $entityInfo->getEntity();
+        $extracted = $this->needle->extract($entity);
         $lastSaved = $entityInfo->getLastSavedData();
         $changed   = [];
 
         /** @psalm-suppress MixedAssignment */
         foreach ($extracted as $key => $value) {
-            if (!$this->areEqual($value, $lastSaved[$key] ?? null)) {
+            $delta = method_exists($entity, 'getChangeDelta') ? (float) $entity->getChangeDelta($key) : self::FLOAT_PRECISION;
+
+            if (!$this->areEqual($value, $lastSaved[$key] ?? null, $delta)) {
                 $changed[] = $key;
             }
         }
@@ -38,12 +43,12 @@ final class ChangeSetCalculator
         return $changed;
     }
 
-    private function areEqual(mixed $one, mixed $two): bool
+    private function areEqual(mixed $one, mixed $two, float $delta): bool
     {
         try {
             $comparator = $this->comparatorFactory->getComparatorFor($one, $two);
 
-            $comparator->assertEquals($one, $two);
+            $comparator->assertEquals($one, $two, $delta);
 
             return true;
         } catch (Exception $exception) {
