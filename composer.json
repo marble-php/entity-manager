@@ -1,6 +1,15 @@
 {
     "name": "marble/entity-manager",
     "description": "An ORM-less entity lifecycle manager for PHP.",
+    "type": "library",
+    "license": "MIT",
+    "homepage": "https://github.com/marble-php/entity-manager",
+    "authors": [
+        {
+            "name": "Mark van den Berg",
+            "email": "mjpvandenberg@gmail.com"
+        }
+    ],
     "keywords": [
         "entity",
         "entity manager",
@@ -8,27 +17,18 @@
         "repository",
         "orm"
     ],
-    "homepage": "https://github.com/marble-php/entity-manager",
-    "license": "MIT",
-    "authors": [
-        {
-            "name": "Mark van den Berg",
-            "email": "mjpvandenberg@gmail.com",
-            "role": "Lead developer"
-        }
-    ],
     "require": {
         "php": "^8.2",
         "psr/event-dispatcher": "^1.0",
         "sebastian/comparator": "^4.0|^5.0",
-        "symfony/var-exporter": "^7.3|^8.0"
+        "symfony/var-exporter": "^7.4|^8.0"
     },
     "require-dev": {
         "dg/bypass-finals": "^1.9",
-        "mockery/mockery": "^1.4",
+        "mockery/mockery": "^1.6",
         "phpunit/phpunit": "^10",
-        "symfony/uid": "^6.2",
-        "vimeo/psalm": "^5.0|^6.0|^7.0"
+        "symfony/uid": "^7.4|^8.0",
+        "vimeo/psalm": "^5.18|^6.0|^7.0"
     },
     "suggest": {
         "symfony/uid": "If you want to use the provided UUID and ULID implementation of the Identifier interface."
@@ -46,6 +46,7 @@
     "config": {
         "allow-plugins": {
             "composer/package-versions-deprecated": true
-        }
+        },
+        "sort-packages": true
     }
 }

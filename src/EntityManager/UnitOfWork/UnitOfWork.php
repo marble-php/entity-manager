@@ -22,7 +22,6 @@ use Marble\EntityManager\Write\EntityWriteContainer;
 use Marble\EntityManager\Write\WriteContext;
 use Marble\Exception\LogicException;
 use Psr\EventDispatcher\EventDispatcherInterface;
-use ReflectionException;
 use Symfony\Component\VarExporter\Exception\ExceptionInterface;
 use Symfony\Component\VarExporter\Instantiator;
 
