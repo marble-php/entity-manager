@@ -217,11 +217,10 @@ final class UnitOfWork implements WriteContext
             throw new LogicException("The unit of work is already flushing.");
         }
 
+        $this->dispatcher?->dispatch(new PreFlushEvent());
         $this->flushing = true;
 
         try {
-            $this->dispatcher?->dispatch(new PreFlushEvent());
-
             $referenceTreeBuilder = new ReferenceTreeBuilder($this->needle);
             $referenceTrees       = [];
 

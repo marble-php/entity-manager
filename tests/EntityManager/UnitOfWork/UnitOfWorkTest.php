@@ -362,6 +362,7 @@ class UnitOfWorkTest extends MockeryTestCase
         $writer->allows('write')->with($persistable1, WriteContext::class)->once();
 
         $dispatcher->allows('dispatch')->with(PreFlushEvent::class)->once();
+        $dispatcher->allows('dispatch')->with(PostFlushEvent::class)->once();
         $dispatcher->allows('dispatch')->with(Mockery::on(fn(EntityPersistedEvent $event): bool => $event->getEntity() === $t1))->once();
 
         $this->expectException(LogicException::class);
