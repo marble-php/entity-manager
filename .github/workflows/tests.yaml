@@ -40,5 +40,10 @@ jobs:
             -   name: "Run tests"
                 run: vendor/bin/phpunit tests
 
+            -   name: "Install most-recent dependencies"
+                run: composer update --ansi --no-interaction --no-progress
+                if: ${{ matrix.version == '8.5' }}
+
             -   name: "Run static code analysis"
                 run: vendor/bin/psalm --no-progress
+                if: ${{ matrix.version == '8.5' }}
