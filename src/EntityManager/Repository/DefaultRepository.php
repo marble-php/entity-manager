@@ -99,7 +99,7 @@ final class DefaultRepository implements Repository
 
             if ($cached !== null) {
                 /** @var list<T> $cached */
-                return $cached[0];
+                return $cached[0] ?? null;
             }
         }
 
