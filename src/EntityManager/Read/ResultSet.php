@@ -7,19 +7,24 @@ namespace Marble\EntityManager\Read;
 use ArrayIterator;
 use Countable;
 use IteratorAggregate;
+use Marble\Entity\Entity;
 use Traversable;
 
 /**
- * @template-implements IteratorAggregate<array-key, ResultRow>
+ * @template T of Entity
+ * @implements IteratorAggregate<array-key, ResultRow>
  */
 final class ResultSet implements Countable, IteratorAggregate
 {
-    /** @var ResultRow[] */
+    /** @var list<ResultRow<T>> */
     private array $results;
 
+    /**
+     * @param ResultRow<T> ...$results
+     */
     public function __construct(ResultRow ...$results)
     {
-        $this->results = $results;
+        $this->results = array_values($results);
     }
 
     #[\Override]
@@ -28,13 +33,16 @@ final class ResultSet implements Countable, IteratorAggregate
         return count($this->results);
     }
 
+    /**
+     * @return ResultRow<T>|null
+     */
     public function first(): ?ResultRow
     {
         return empty($this->results) ? null : reset($this->results);
     }
 
     /**
-     * @return Traversable<array-key, ResultRow>
+     * @return Traversable<array-key, ResultRow<T>>
      */
     #[\Override]
     public function getIterator(): Traversable

@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Marble\Entity;
 
 /**
+ * @template T of Entity
+ * @implements Identifier<T>
  * @api
  */
 class SimpleId implements Identifier

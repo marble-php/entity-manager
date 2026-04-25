@@ -92,6 +92,7 @@ final class DefaultRepository implements Repository
     {
         if ($query instanceof Identifier) {
             if ($entity = $this->getUnitOfWork()->getEntityFromIdentityMap($this->getEntityClassName(), $query)) {
+                /** @var T $entity */
                 return $entity;
             }
         } else {
@@ -189,6 +190,7 @@ final class DefaultRepository implements Repository
     }
 
     /**
+     * @param ResultRow<T> $row
      * @return T
      */
     private function makeEntity(ResultRow $row): Entity

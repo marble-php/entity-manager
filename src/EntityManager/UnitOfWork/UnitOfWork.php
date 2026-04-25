@@ -8,9 +8,9 @@ use Marble\Entity\Entity;
 use Marble\Entity\Identifier;
 use Marble\EntityManager\Contract\EntityIoProvider;
 use Marble\EntityManager\Event\EntityPersistedEvent;
+use Marble\EntityManager\Event\EntityRegisteredEvent;
 use Marble\EntityManager\Event\EntityRemovedEvent;
 use Marble\EntityManager\Event\FetchedEntityInstantiatedEvent;
-use Marble\EntityManager\Event\EntityRegisteredEvent;
 use Marble\EntityManager\Event\NewEntityPersistedEvent;
 use Marble\EntityManager\Event\NewEntityRegisteredEvent;
 use Marble\EntityManager\Event\PostFlushEvent;
@@ -62,7 +62,7 @@ final class UnitOfWork implements WriteContext
     /**
      * @template T of Entity
      * @param class-string<T> $className
-     * @param Identifier      $id
+     * @param Identifier<T>   $id
      * @return T|null
      */
     public function getEntityFromIdentityMap(string $className, Identifier $id): ?Entity
@@ -76,7 +76,7 @@ final class UnitOfWork implements WriteContext
     /**
      * @template T of Entity
      * @param class-string<T>      $className
-     * @param Identifier           $identifier
+     * @param Identifier<T>        $identifier
      * @param array<string, mixed> $data
      * @return T
      */

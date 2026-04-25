@@ -6,6 +6,7 @@ namespace Marble\EntityManager;
 
 use Marble\Entity\Entity;
 use Marble\Entity\EntityReference;
+use Marble\Entity\Identifier;
 use Marble\EntityManager\Cache\QueryResultCache;
 use Marble\EntityManager\Contract\EntityIoProvider;
 use Marble\EntityManager\Exception\EntityNotFoundException;
@@ -13,6 +14,7 @@ use Marble\EntityManager\Read\ReadContext;
 use Marble\EntityManager\Repository\Repository;
 use Marble\EntityManager\Repository\RepositoryFactory;
 use Marble\EntityManager\UnitOfWork\UnitOfWork;
+use Marble\Exception\LogicException;
 use Psr\Container\ContainerInterface;
 use Psr\EventDispatcher\EventDispatcherInterface;
 
@@ -56,13 +58,24 @@ final class EntityManager implements ReadContext
 
     /**
      * @template T of Entity
-     * @param EntityReference<T> $reference
+     * @param EntityReference<T>|class-string<T> $reference
+     * @param Identifier<T>|null                 $id
      * @return T
      * @throws EntityNotFoundException
      */
     #[\Override]
-    public function fetch(EntityReference $reference): Entity
+    public function fetch(EntityReference|string $reference, ?Identifier $id = null): Entity
     {
+        if (is_string($reference)) {
+            if ($id === null) {
+                throw new LogicException("Identifier must be provided when fetching by entity class name.");
+            }
+
+            $reference = new EntityReference($reference, $id);
+        } elseif ($id !== null) {
+            throw new LogicException("Identifier must not be provided when fetching by entity reference.");
+        }
+
         return $this->getRepository($reference->getClassName())->fetchOne($reference->getId())
             ?? throw new EntityNotFoundException(sprintf("%s with identifier %s does not exist.",
                 $reference->getClassName(), (string) $reference->getId()));

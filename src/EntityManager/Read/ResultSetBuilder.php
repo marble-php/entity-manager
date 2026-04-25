@@ -21,7 +21,7 @@ final class ResultSetBuilder implements DataCollector
     private array $data = [];
 
     /**
-     * @var array<string, Identifier>
+     * @var array<string, Identifier<T>>
      */
     private array $identifiers = [];
 
@@ -70,6 +70,9 @@ final class ResultSetBuilder implements DataCollector
         $this->childClasses[(string) $identifier] = $class;
     }
 
+    /**
+     * @return ResultSet<T>
+     */
     public function build(): ResultSet
     {
         $rows = [];

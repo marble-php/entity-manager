@@ -14,6 +14,7 @@ class EntityReference
 {
     /**
      * @param class-string<T> $className
+     * @param Identifier<T>   $identifier
      */
     public function __construct(
         private readonly string     $className,
@@ -34,6 +35,9 @@ class EntityReference
         return $this->className;
     }
 
+    /**
+     * @return Identifier<T>
+     */
     public function getId(): Identifier
     {
         return $this->identifier;

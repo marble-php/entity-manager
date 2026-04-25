@@ -13,15 +13,22 @@ use Marble\Entity\Identifier;
 interface DataCollector
 {
     /**
+     * @param Identifier<T>        $identifier
      * @param array<string, mixed> $data
      * @param class-string<T>|null $subclass
      */
     public function put(Identifier $identifier, array $data, ?string $subclass = null): void;
 
+    /**
+     * @param Identifier<T> $identifier
+     * @param string        $propertyName
+     * @param mixed         $value
+     * @return void
+     */
     public function putProperty(Identifier $identifier, string $propertyName, mixed $value): void;
 
     /**
-     * @param Identifier      $identifier
+     * @param Identifier<T>   $identifier
      * @param class-string<T> $class
      */
     public function putClass(Identifier $identifier, string $class): void;
