@@ -26,11 +26,9 @@
     "require-dev": {
         "dg/bypass-finals": "^1.9",
         "mockery/mockery": "^1.6.12",
+        "phpstan/phpstan": "^2.1",
         "phpunit/phpunit": "^10|^11|^12|^13",
-        "symfony/uid": "^7.4|^8.0",
-        "vimeo/psalm": "^5.25|^6.15|^7.0",
-        "amphp/dns": "^2.1.2",
-        "amphp/socket": "^2.3.1"
+        "symfony/uid": "^7.4|^8.0"
     },
     "suggest": {
         "symfony/uid": "If you want to use the provided UUID and ULID implementation of the Identifier interface."

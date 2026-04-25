@@ -63,7 +63,6 @@ class Criteria implements ArrayAccess, IteratorAggregate
     {
         $offset = $this->parseOffset($offset);
 
-        /** @psalm-suppress MixedReturnStatement */
         return $this->criteria[$offset];
     }
 

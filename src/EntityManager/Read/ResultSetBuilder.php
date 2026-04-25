@@ -9,6 +9,10 @@ use Marble\Entity\Identifier;
 use Marble\EntityManager\Contract\EntityReader;
 use Marble\Exception\LogicException;
 
+/**
+ * @template T of Entity
+ * @implements DataCollector<T>
+ */
 final class ResultSetBuilder implements DataCollector
 {
     /**
@@ -22,10 +26,13 @@ final class ResultSetBuilder implements DataCollector
     private array $identifiers = [];
 
     /**
-     * @var array<string, class-string<Entity>>
+     * @var array<string, class-string<T>>
      */
     private array $childClasses = [];
 
+    /**
+     * @param EntityReader<T> $reader
+     */
     public function __construct(private readonly EntityReader $reader)
     {
     }
@@ -37,7 +44,6 @@ final class ResultSetBuilder implements DataCollector
             $this->putClass($identifier, $subclass);
         }
 
-        /** @psalm-suppress MixedAssignment */
         foreach ($data as $propertyName => $value) {
             $this->putProperty($identifier, $propertyName, $value);
         }

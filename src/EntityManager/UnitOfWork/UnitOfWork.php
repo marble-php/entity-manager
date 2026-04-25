@@ -33,7 +33,7 @@ final class UnitOfWork implements WriteContext
     private ChangeSetCalculator $changeCalculator;
 
     /**
-     * @var array<class-string, ClassInfo>
+     * @var array<class-string<Entity>, ClassInfo<Entity>>
      */
     private array $classInfos = [];
 
@@ -67,8 +67,10 @@ final class UnitOfWork implements WriteContext
      */
     public function getEntityFromIdentityMap(string $className, Identifier $id): ?Entity
     {
-        /** @var array<class-string<T>, array<string, T>> $this->identityMap */
-        return $this->identityMap[$className][(string) $id] ?? null;
+        $entity = $this->identityMap[$className][(string) $id] ?? null;
+
+        /** @var T|null */
+        return $entity;
     }
 
     /**
@@ -275,11 +277,14 @@ final class UnitOfWork implements WriteContext
 
             foreach ($this->entities as $oid => $info) {
                 if ($info->isToBeRemoved()) {
-                    throw new LogicException(sprintf("Entity %s was queued for removal but has not been removed.", LogicException::strEntity($info->getEntity())));
+                    throw new LogicException(sprintf("Entity %s was queued for removal but has not been removed.",
+                        LogicException::strEntity($info->getEntity())));
                 } elseif ($info->getState() === EntityState::NEW) {
-                    throw new LogicException(sprintf("New entity %s has not been inserted.", LogicException::strEntity($info->getEntity())));
+                    throw new LogicException(sprintf("New entity %s has not been inserted. Are you missing a writer for this entity class?",
+                        LogicException::strEntity($info->getEntity())));
                 } elseif ($info->hasChanged()) {
-                    throw new LogicException(sprintf("Changed entity %s has not been updated.", LogicException::strEntity($info->getEntity())));
+                    throw new LogicException(sprintf("Changed entity %s has not been updated. Are you missing a writer for this entity class?",
+                        LogicException::strEntity($info->getEntity())));
                 } elseif ($info->getState() === EntityState::REMOVED) {
                     // Forget about this entity.
                     unset($this->entities[$oid]);
@@ -422,9 +427,10 @@ final class UnitOfWork implements WriteContext
      */
     private function getClassInfo(string $className): ClassInfo
     {
-        /** @var ClassInfo<T> $classInfo */
+        // @phpstan-ignore assign.propertyType
         $classInfo = $this->classInfos[$className] ??= new ClassInfo($className);
 
+        /** @var ClassInfo<T> */
         return $classInfo;
     }
 

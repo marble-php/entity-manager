@@ -7,7 +7,8 @@ namespace Marble\EntityManager\Write;
 use Marble\Entity\Entity;
 
 /**
- * @extends Persistable<Entity>
+ * @template U of Entity
+ * @extends Persistable<U>
  */
 interface HasChanged extends Persistable
 {

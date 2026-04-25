@@ -8,7 +8,6 @@ use Marble\Entity\Entity;
 use Marble\EntityManager\Repository\Repository;
 
 /**
- * @template T of Entity
  * @api
  */
 class QueryResultCache
@@ -17,15 +16,16 @@ class QueryResultCache
      * First-level keys are entity class names.
      * Second-level keys are hashes of serialized queries plus a suffix indicating one or many.
      *
-     * @var array<class-string<T>, array<string, list<T>>>
+     * @var array<class-string<Entity>, array<string, list<Entity>>>
      */
     private array $cache = [];
 
     /**
+     * @template T of Entity
      * @param Repository<T> $repository
      * @param object|null   $query
      * @param bool          $one
-     * @param list<T>       $entities
+     * @param T             ...$entities
      */
     public function save(Repository $repository, ?object $query, bool $one, Entity ...$entities): void
     {
@@ -33,6 +33,7 @@ class QueryResultCache
     }
 
     /**
+     * @template T of Entity
      * @param Repository<T> $repository
      * @param object|null   $query
      * @param bool          $one
@@ -40,7 +41,8 @@ class QueryResultCache
      */
     public function get(Repository $repository, ?object $query, bool $one): ?array
     {
-        $entityCache = $this->cache[$repository->getEntityClassName()] ?? null;
+        /** @var array<string, list<T>> $entityCache */
+        $entityCache = $this->cache[$repository->getEntityClassName()] ?? [];
 
         return $entityCache[$this->makeCacheKey($query, $one)] ?? null;
     }
@@ -57,11 +59,13 @@ class QueryResultCache
         return get_class($query) . '|' . md5($serialized) . '|' . ($one ? '1' : 'm');
     }
 
+    /**
+     * @return array<array-key, mixed>
+     */
     private function toArrayRecursive(object $object): array
     {
         $array = (array) $object;
 
-        /** @psalm-suppress MixedAssignment */
         foreach ($array as $key => $value) {
             if (is_object($value)) {
                 $array[$key] = $this->toArrayRecursive($value);

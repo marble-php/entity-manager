@@ -11,7 +11,7 @@ use Symfony\Component\VarExporter\Hydrator;
 
 final class ObjectNeedle
 {
-    /** @var array<class-string, ReflectionClass> */
+    /** @var array<class-string<object>, ReflectionClass<object>> */
     private array $classReflections = [];
 
     /**
@@ -30,7 +30,6 @@ final class ObjectNeedle
 
                 if ($property->getDeclaringClass()->getName() === $className) {
                     if (array_key_exists($propertyName, $data)) {
-                        /** @psalm-suppress MixedAssignment */
                         $propertiesByClass[$className][$propertyName] = $data[$propertyName];
                     } elseif ($property->getType()?->allowsNull()) {
                         $propertiesByClass[$className][$propertyName] = null;
@@ -42,11 +41,15 @@ final class ObjectNeedle
         Hydrator::hydrate($object, [], $propertiesByClass);
     }
 
+    /**
+     * @param object $object
+     * @return ReflectionClass<object>
+     */
     private function getReflection(object $object): ReflectionClass
     {
         try {
             return $this->classReflections[$object::class] ??= new ReflectionClass($object::class);
-        } catch (ReflectionException $e) {
+        } catch (ReflectionException $e) { // @phpstan-ignore catch.neverThrown
             throw new LogicException($e->getMessage(), 0, $e);
         }
     }
@@ -62,7 +65,6 @@ final class ObjectNeedle
         do {
             foreach ($reflection->getProperties() as $property) {
                 if ($property->isInitialized($object)) {
-                    /** @psalm-suppress MixedAssignment */
                     $result[$property->getName()] = $property->getValue($object);
                 }
             }

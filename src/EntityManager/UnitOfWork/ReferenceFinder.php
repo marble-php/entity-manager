@@ -35,16 +35,15 @@ class ReferenceFinder
 
     /**
      * @template T
-     * @param array<string, mixed>                  $data
-     * @param callable(Entity, list<string|int>): T $fn
-     * @param array<string, string>                 $path
+     * @param array<string, mixed>                   $data
+     * @param callable(Entity, list<string|int>): ?T $fn
+     * @param array<string, string>                  $path
      * @return array<string, T>
      */
     private function cascade(array $data, callable $fn, array $path): array
     {
         $collection = [];
 
-        /** @psalm-suppress MixedAssignment */
         foreach ($data as $key => $value) {
             $currentPathString = implode('.', [...$path, $key]);
 

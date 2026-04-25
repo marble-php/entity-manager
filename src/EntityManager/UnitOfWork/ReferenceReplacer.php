@@ -12,9 +12,7 @@ use stdClass;
 final class ReferenceReplacer
 {
     /**
-     * @psalm-suppress MixedAssignment
-     * @psalm-suppress UnsupportedReferenceUsage
-     * @psalm-suppress ReferenceReusedFromConfusingScope
+     * @param array<array-key, mixed> $path
      */
     public function replaceReference(Entity $entity, array $path, Entity $reference): void
     {
@@ -22,7 +20,6 @@ final class ReferenceReplacer
             throw new LogicException(sprintf("Path to replace %s in %s must not be empty.", $reference::class, LogicException::strEntity($entity)));
         }
 
-        /** @var object|array $target */
         $target = $entity;
 
         foreach (array_values($path) as $index => $segment) {
@@ -84,9 +81,8 @@ final class ReferenceReplacer
         };
 
         /** @var callable $bound */
-        $bound = Closure::bind($getter, $object, $object);
+        $bound = Closure::bind($getter, $object, $object); // @phpstan-ignore varTag.nativeType
 
-        /** @psalm-suppress NonVariableReferenceReturn */
         return $bound();
     }
 }

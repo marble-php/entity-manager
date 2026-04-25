@@ -31,9 +31,10 @@ final class ChangeSetCalculator
         $lastSaved = $entityInfo->getLastSavedData();
         $changed   = [];
 
-        /** @psalm-suppress MixedAssignment */
         foreach ($extracted as $key => $value) {
-            $delta = method_exists($entity, 'getChangeDelta') ? (float) $entity->getChangeDelta($key) : self::FLOAT_PRECISION;
+            $delta = method_exists($entity, 'getChangeDelta')
+                ? (float) $entity->getChangeDelta($key) // @phpstan-ignore cast.double
+                : self::FLOAT_PRECISION;
 
             if (!$this->areEqual($value, $lastSaved[$key] ?? null, $delta)) {
                 $changed[] = $key;

@@ -7,13 +7,13 @@ namespace Marble\EntityManager\Write;
 use Marble\Entity\Entity;
 
 /**
- * @template T of Entity
- * @implements Persistable<T>
+ * @template Q of Entity
+ * @implements Persistable<Q>
  */
 class EntityWriteContainer implements Persistable
 {
     /**
-     * @param T                    $entity
+     * @param Q                    $entity
      * @param array<string, mixed> $data
      */
     public function __construct(

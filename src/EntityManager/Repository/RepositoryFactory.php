@@ -52,11 +52,12 @@ final class RepositoryFactory
             }
 
             if ($allowCustom) {
+                // @phpstan-ignore assign.propertyType
                 $this->repositories[$customKey] = $repository;
             }
         }
 
-        /** @var Repository<T> $repository */
+        /** @var Repository<T> */
         return $repository;
     }
 
@@ -70,6 +71,7 @@ final class RepositoryFactory
     private function createRepository(EntityManager $entityManager, string $entityClassName, bool $allowCustom = true): Repository
     {
         if ($allowCustom) {
+            /** @var CustomRepository<Entity>|string|null $repository */
             $repository = $this->ioProvider->getCustomRepository($entityClassName);
 
             if ($repository !== null) {
@@ -77,8 +79,10 @@ final class RepositoryFactory
                     $repository = $this->instantiateCustomRepository($repository, $entityClassName, $entityManager);
                 }
 
+                /** @var CustomRepository<Entity> $repository */
                 $this->validateRepositoryEntity($repository, $entityClassName);
 
+                /** @var CustomRepository<T> */
                 return $repository;
             }
         }
@@ -115,14 +119,14 @@ final class RepositoryFactory
 
     /**
      * @template T of Entity
-     * @param class-string<CustomRepository<T>> $repositoryClassName
-     * @param class-string<T>                   $entityClassName
-     * @param EntityManager                     $entityManager
+     * @param string          $repositoryClassName
+     * @param class-string<T> $entityClassName
+     * @param EntityManager   $entityManager
      * @return CustomRepository<T>
      */
     private function instantiateCustomRepository(
         string        $repositoryClassName,
-        string  $entityClassName,
+        string        $entityClassName,
         EntityManager $entityManager,
     ): CustomRepository {
         if (!class_exists($repositoryClassName)) {
@@ -138,15 +142,17 @@ final class RepositoryFactory
         // If your custom repository does need additional constructor-injected dependencies,
         // return an instance from the EntityIoProvider.
 
-        /**
-         * @psalm-suppress UnsafeInstantiation
-         * @var CustomRepository<T> $repository
-         */
         $repository = new $repositoryClassName($entityManager, $entityClassName);
 
+        /** @var CustomRepository<T> */
         return $repository;
     }
 
+    /**
+     * @param Repository<Entity>   $repository
+     * @param class-string<Entity> $entityClassName
+     * @return void
+     */
     private function validateRepositoryEntity(Repository $repository, string $entityClassName): void
     {
         if ($repository->getEntityClassName() !== $entityClassName) {

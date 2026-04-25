@@ -7,13 +7,14 @@ namespace Marble\EntityManager\Write;
 use Marble\Entity\Entity;
 
 /**
- * @template T of Entity
- * @extends EntityWriteContainer<T>
+ * @template V of Entity
+ * @extends EntityWriteContainer<V>
+ * @implements HasChanged<V>
  */
 final class EntityUpdateContainer extends EntityWriteContainer implements HasChanged
 {
     /**
-     * @param T                    $entity
+     * @param V                    $entity
      * @param array<string, mixed> $data
      * @param array<string, mixed> $originalData
      * @param list<string>         $changedProperties
