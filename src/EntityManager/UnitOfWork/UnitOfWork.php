@@ -11,9 +11,10 @@ use Marble\EntityManager\Event\EntityPersistedEvent;
 use Marble\EntityManager\Event\EntityRegisteredEvent;
 use Marble\EntityManager\Event\EntityRemovedEvent;
 use Marble\EntityManager\Event\FetchedEntityInstantiatedEvent;
+use Marble\EntityManager\Event\FlushedEvent;
+use Marble\EntityManager\Event\FlushFailedEvent;
 use Marble\EntityManager\Event\NewEntityPersistedEvent;
 use Marble\EntityManager\Event\NewEntityRegisteredEvent;
-use Marble\EntityManager\Event\PostFlushEvent;
 use Marble\EntityManager\Event\PreClearEvent;
 use Marble\EntityManager\Event\PreFlushEvent;
 use Marble\EntityManager\Exception\EntitySkippedException;
@@ -296,9 +297,14 @@ final class UnitOfWork implements WriteContext
                     }
                 }
             }
-        } finally {
+
             $this->flushing = false;
-            $this->dispatcher?->dispatch(new PostFlushEvent());
+            $this->dispatcher?->dispatch(new FlushedEvent());
+        } finally {
+            if ($this->flushing) {
+                $this->flushing = false;
+                $this->dispatcher?->dispatch(new FlushFailedEvent());
+            }
         }
     }
 

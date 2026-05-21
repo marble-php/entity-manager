@@ -10,8 +10,9 @@ use Marble\EntityManager\Event\EntityPersistedEvent;
 use Marble\EntityManager\Event\EntityRegisteredEvent;
 use Marble\EntityManager\Event\EntityRemovedEvent;
 use Marble\EntityManager\Event\FetchedEntityInstantiatedEvent;
+use Marble\EntityManager\Event\FlushedEvent;
+use Marble\EntityManager\Event\FlushFailedEvent;
 use Marble\EntityManager\Event\NewEntityRegisteredEvent;
-use Marble\EntityManager\Event\PostFlushEvent;
 use Marble\EntityManager\Event\PreClearEvent;
 use Marble\EntityManager\Event\PreFlushEvent;
 use Marble\EntityManager\Exception\EntitySkippedException;
@@ -197,7 +198,6 @@ class UnitOfWorkTest extends MockeryTestCase
         $this->assertSame($t1, $t2);
     }
 
-    /** @noinspection PhpPossiblePolymorphicInvocationInspection */
     public function testWrite(): void
     {
         $ioProvider = Mockery::mock(EntityIoProvider::class);
@@ -243,7 +243,7 @@ class UnitOfWorkTest extends MockeryTestCase
         $dispatcher->allows('dispatch')->with($persistedEvent2)->once();
         $dispatcher->allows('dispatch')->with($persistedEvent3)->once();
         $dispatcher->allows('dispatch')->with(EntityRemovedEvent::class)->once();
-        $dispatcher->allows('dispatch')->with(PostFlushEvent::class)->once();
+        $dispatcher->allows('dispatch')->with(FlushedEvent::class)->once();
 
         $unitOfWork->flush();
 
@@ -251,7 +251,7 @@ class UnitOfWorkTest extends MockeryTestCase
 
         // No writes/deletes needed.
         $dispatcher->allows('dispatch')->with(PreFlushEvent::class)->once();
-        $dispatcher->allows('dispatch')->with(PostFlushEvent::class)->once();
+        $dispatcher->allows('dispatch')->with(FlushedEvent::class)->once();
 
         $unitOfWork->flush();
 
@@ -260,7 +260,7 @@ class UnitOfWorkTest extends MockeryTestCase
         $dispatcher->allows('dispatch')->with(PreFlushEvent::class)->once();
         $dispatcher->allows('dispatch')->with(EntityRegisteredEvent::class)->once();
         $dispatcher->allows('dispatch')->with(EntityPersistedEvent::class)->twice();
-        $dispatcher->allows('dispatch')->with(PostFlushEvent::class)->once();
+        $dispatcher->allows('dispatch')->with(FlushedEvent::class)->once();
         $unitOfWork->flush();
         $this->assertSame($t4, $unitOfWork->getEntityFromIdentityMap(EntityWithSimpleId::class, $t4->getId()));
         $this->assertNotNull($unitOfWork->getEntityFromIdentityMap(EntityWithSimpleId::class, $t3->getId()));
@@ -272,7 +272,7 @@ class UnitOfWorkTest extends MockeryTestCase
         $dispatcher->allows('dispatch')->with(PreFlushEvent::class)->once();
         $dispatcher->allows('dispatch')->with(EntityPersistedEvent::class)->once();
         $dispatcher->allows('dispatch')->with(EntityRemovedEvent::class)->once();
-        $dispatcher->allows('dispatch')->with(PostFlushEvent::class)->once();
+        $dispatcher->allows('dispatch')->with(FlushedEvent::class)->once();
         $unitOfWork->flush();
         $this->assertNull($unitOfWork->getEntityFromIdentityMap(EntityWithSimpleId::class, $t4->getId()));
     }
@@ -304,7 +304,7 @@ class UnitOfWorkTest extends MockeryTestCase
         $ioProvider->allows('getWriter')->andReturn($writer);
         $writer->allows('delete')->with($t1, $unitOfWork)->once();
         $dispatcher->allows('dispatch')->with(PreFlushEvent::class)->once();
-        $dispatcher->allows('dispatch')->with(PostFlushEvent::class)->once();
+        $dispatcher->allows('dispatch')->with(FlushedEvent::class)->once();
         $dispatcher->allows('dispatch')->with(EntityRemovedEvent::class)->once();
 
         $unitOfWork->flush();
@@ -361,9 +361,10 @@ class UnitOfWorkTest extends MockeryTestCase
         $writer->allows('write')->with($persistable2, WriteContext::class)->once()->andThrow(EntitySkippedException::class);
         $writer->allows('write')->with($persistable1, WriteContext::class)->once();
 
-        $dispatcher->allows('dispatch')->with(PreFlushEvent::class)->once();
-        $dispatcher->allows('dispatch')->with(PostFlushEvent::class)->once();
-        $dispatcher->allows('dispatch')->with(Mockery::on(fn(EntityPersistedEvent $event): bool => $event->getEntity() === $t1))->once();
+        $dispatcher->expects('dispatch')->with(PreFlushEvent::class)->once();
+        $dispatcher->expects('dispatch')->with(FlushFailedEvent::class)->once();
+        $dispatcher->expects('dispatch')->with(Mockery::on(fn(EntityPersistedEvent $event): bool => $event->getEntity() === $t1))->once();
+        $dispatcher->expects('dispatch')->with(Mockery::on(fn(EntityPersistedEvent $event): bool => $event->getEntity() === $t2))->never();
 
         $this->expectException(LogicException::class);
         $unitOfWork->flush();
@@ -408,7 +409,7 @@ class UnitOfWorkTest extends MockeryTestCase
         $dispatcher->allows('dispatch')->with(PreFlushEvent::class)->once();
         $dispatcher->allows('dispatch')->with(Mockery::on(fn(EntityPersistedEvent $event): bool => $event->getEntity() === $t1))->once();
         $dispatcher->allows('dispatch')->with(Mockery::on(fn(EntityRemovedEvent $event): bool => $event->getEntity() === $t2))->once();
-        $dispatcher->allows('dispatch')->with(PostFlushEvent::class)->once();
+        $dispatcher->allows('dispatch')->with(FlushedEvent::class)->once();
 
         $unitOfWork->flush();
 
@@ -448,7 +449,7 @@ class UnitOfWorkTest extends MockeryTestCase
         $dispatcher->allows('dispatch')->with(PreFlushEvent::class)->once();
         $dispatcher->allows('dispatch')->with(Mockery::on(fn(EntityRemovedEvent $event): bool => $event->getEntity() === $t2))->once();
         $dispatcher->allows('dispatch')->with(Mockery::on(fn(EntityPersistedEvent $event): bool => $event->getEntity() === $t1))->once();
-        $dispatcher->allows('dispatch')->with(PostFlushEvent::class)->once();
+        $dispatcher->allows('dispatch')->with(FlushedEvent::class)->once();
 
         $unitOfWork->flush();
     }

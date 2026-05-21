@@ -4,6 +4,6 @@ declare(strict_types=1);
 
 namespace Marble\EntityManager\Event;
 
-final class PostFlushEvent extends Event
+abstract class PostFlushEvent extends Event
 {
 }
