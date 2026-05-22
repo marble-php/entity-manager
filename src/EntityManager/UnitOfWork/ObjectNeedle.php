@@ -30,13 +30,17 @@ final class ObjectNeedle
                 $propertyName = $property->getName();
 
                 if ($property->getDeclaringClass()->getName() === $className) {
-                    $propertyType = $property->getType();
+                    if (\PHP_VERSION_ID >= 80400) {
+                        $settableType = $property->getSettableType();
 
-                    if ($propertyType instanceof ReflectionNamedType && $propertyType->getName() === 'never') {
-                        continue; // virtual property without set hook
-                    } elseif (array_key_exists($propertyName, $data)) {
+                        if ($settableType instanceof ReflectionNamedType && $settableType->getName() === 'never') {
+                            continue; // virtual property without set hook
+                        }
+                    }
+
+                    if (array_key_exists($propertyName, $data)) {
                         $propertiesByClass[$className][$propertyName] = $data[$propertyName];
-                    } elseif ($propertyType?->allowsNull()) {
+                    } elseif ($property->getType()?->allowsNull()) {
                         $propertiesByClass[$className][$propertyName] = null;
                     }
                 }
