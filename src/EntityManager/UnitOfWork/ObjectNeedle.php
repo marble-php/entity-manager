@@ -7,6 +7,7 @@ namespace Marble\EntityManager\UnitOfWork;
 use Marble\Exception\LogicException;
 use ReflectionClass;
 use ReflectionException;
+use ReflectionNamedType;
 use Symfony\Component\VarExporter\Hydrator;
 
 final class ObjectNeedle
@@ -29,9 +30,13 @@ final class ObjectNeedle
                 $propertyName = $property->getName();
 
                 if ($property->getDeclaringClass()->getName() === $className) {
-                    if (array_key_exists($propertyName, $data)) {
+                    $propertyType = $property->getType();
+
+                    if ($propertyType instanceof ReflectionNamedType && $propertyType->getName() === 'never') {
+                        continue; // virtual property without set hook
+                    } elseif (array_key_exists($propertyName, $data)) {
                         $propertiesByClass[$className][$propertyName] = $data[$propertyName];
-                    } elseif ($property->getType()?->allowsNull()) {
+                    } elseif ($propertyType?->allowsNull()) {
                         $propertiesByClass[$className][$propertyName] = null;
                     }
                 }
