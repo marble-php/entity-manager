@@ -7,7 +7,7 @@ namespace Marble\Entity;
 use Stringable;
 
 /**
- * @template T of Entity
+ * @template-covariant T of Entity
  */
 interface Identifier extends Stringable
 {

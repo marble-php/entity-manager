@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Marble\Entity;
 
 /**
- * @template T of Entity
+ * @template-covariant T of Entity
  * @implements Identifier<T>
  * @api
  */

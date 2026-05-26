@@ -7,7 +7,7 @@ namespace Marble\Entity;
 use Symfony\Component\Uid\UuidV7 as SymfonyUuidV7;
 
 /**
- * @template T of Entity
+ * @template-covariant T of Entity
  * @implements Identifier<T>
  * @api
  */
