@@ -7,7 +7,7 @@ namespace Marble\Entity;
 use Marble\Exception\LogicException;
 
 /**
- * @template T of Entity
+ * @template-covariant T of Entity
  * @api
  */
 class EntityReference

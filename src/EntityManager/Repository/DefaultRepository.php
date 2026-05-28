@@ -6,8 +6,8 @@ namespace Marble\EntityManager\Repository;
 
 use Marble\Entity\Entity;
 use Marble\Entity\Identifier;
-use Marble\EntityManager\Cache\QueryResultCache;
 use Marble\EntityManager\Contract\EntityReader;
+use Marble\EntityManager\Contract\QueryResultCacheInterface;
 use Marble\EntityManager\EntityManager;
 use Marble\EntityManager\Read\Criteria;
 use Marble\EntityManager\Read\ResultRow;
@@ -79,7 +79,7 @@ final class DefaultRepository implements Repository
         return $this->entityManager->getUnitOfWork();
     }
 
-    private function getCache(): QueryResultCache
+    private function getCache(): QueryResultCacheInterface
     {
         return $this->entityManager->getQueryResultCache();
     }

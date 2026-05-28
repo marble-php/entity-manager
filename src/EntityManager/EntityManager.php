@@ -9,13 +9,13 @@ use Marble\Entity\EntityReference;
 use Marble\Entity\Identifier;
 use Marble\EntityManager\Cache\QueryResultCache;
 use Marble\EntityManager\Contract\EntityIoProvider;
+use Marble\EntityManager\Contract\QueryResultCacheInterface;
 use Marble\EntityManager\Exception\EntityNotFoundException;
 use Marble\EntityManager\Read\ReadContext;
 use Marble\EntityManager\Repository\Repository;
 use Marble\EntityManager\Repository\RepositoryFactory;
 use Marble\EntityManager\UnitOfWork\UnitOfWork;
 use Marble\Exception\LogicException;
-use Psr\Container\ContainerInterface;
 use Psr\EventDispatcher\EventDispatcherInterface;
 
 /**
@@ -27,9 +27,9 @@ final class EntityManager implements ReadContext
     private readonly RepositoryFactory $repositoryFactory;
 
     public function __construct(
-        EntityIoProvider                  $ioProvider,
-        ?EventDispatcherInterface         $dispatcher = null,
-        private readonly QueryResultCache $queryResultCache = new QueryResultCache(),
+        EntityIoProvider                           $ioProvider,
+        ?EventDispatcherInterface                  $dispatcher = null,
+        private readonly QueryResultCacheInterface $queryResultCache = new QueryResultCache(),
     ) {
         $this->unitOfWork        = new UnitOfWork($ioProvider, $dispatcher);
         $this->repositoryFactory = new RepositoryFactory($ioProvider);
@@ -40,7 +40,7 @@ final class EntityManager implements ReadContext
         return $this->unitOfWork;
     }
 
-    public function getQueryResultCache(): QueryResultCache
+    public function getQueryResultCache(): QueryResultCacheInterface
     {
         return $this->queryResultCache;
     }

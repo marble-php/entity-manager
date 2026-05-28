@@ -3,11 +3,10 @@
 namespace Marble\Tests\EntityManager\Repository;
 
 use Marble\Entity\Ulid;
-use Marble\EntityManager\Cache\QueryResultCache;
 use Marble\EntityManager\Contract\EntityIoProvider;
 use Marble\EntityManager\Contract\EntityReader;
+use Marble\EntityManager\Contract\QueryResultCacheInterface;
 use Marble\EntityManager\EntityManager;
-use Marble\EntityManager\Read\Criteria;
 use Marble\EntityManager\Read\DataCollector;
 use Marble\EntityManager\Read\ReadContext;
 use Marble\EntityManager\Read\ResultRow;
@@ -112,7 +111,7 @@ class RepositoryFactoryTest extends MockeryTestCase
 
         $this->assertInstanceOf(DefaultRepository::class, $repo);
 
-        $entityManager->allows('getQueryResultCache')->andReturn($cache = Mockery::mock(QueryResultCache::class));
+        $entityManager->allows('getQueryResultCache')->andReturn($cache = Mockery::mock(QueryResultCacheInterface::class));
         $entityManager->allows('getUnitOfWork')->andReturn($unitOfWork);
         $unitOfWork->allows('getEntityFromIdentityMap')->andReturn($t1 = new BasicTestEntity());
         $reader1->allows('read')->once()->with($query = $this->makeQuery(), $this->collect(

@@ -5,12 +5,13 @@ declare(strict_types=1);
 namespace Marble\EntityManager\Cache;
 
 use Marble\Entity\Entity;
+use Marble\EntityManager\Contract\QueryResultCacheInterface;
 use Marble\EntityManager\Repository\Repository;
 
 /**
  * @api
  */
-class QueryResultCache
+class QueryResultCache implements QueryResultCacheInterface
 {
     /**
      * First-level keys are entity class names.
